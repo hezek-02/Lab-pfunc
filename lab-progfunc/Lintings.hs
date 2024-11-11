@@ -2,6 +2,7 @@ module Lintings where
 
 import AST
 import LintTypes
+import Data.Functor.Classes (eq1)
 
 
 --------------------------------------------------------------------------------
@@ -45,8 +46,13 @@ lintComputeConstant expr = case expr of
 -- Elimina chequeos de la forma e == True, True == e, e == False y False == e
 -- Construye sugerencias de la forma (LintBool e r)
 lintRedBool :: Linting Expr
-lintRedBool = undefined
-
+lintRedBool expr = case expr of 
+   Infix Eq (Var a) (Lit (LitBool True)) -> (Var a, [LintBool expr (Var a)])
+   Infix Eq (Var a) (Lit (LitBool False)) -> (App (Var "not") (Var a), [LintBool expr (App (Var "not") (Var a))])
+   Infix Eq (Lit (LitBool True)) (Var a) -> (Var a, [LintBool expr (Var a)])
+   Infix Eq (Lit (LitBool False)) (Var a) -> (App (Var "not") (Var a), [LintBool expr (App (Var "not") (Var a))])
+   Infix Eq e1 e2 -> lintRedBool e1
+   _ -> (expr, [])
 
 --------------------------------------------------------------------------------
 -- Eliminación de if redundantes
@@ -57,6 +63,7 @@ lintRedBool = undefined
 -- Construye sugerencias de la forma (LintRedIf e r)
 lintRedIfCond :: Linting Expr
 lintRedIfCond = undefined
+
 
 --------------------------------------------------------------------------------
 -- Sustitución de if por conjunción entre la condición y su rama _then_

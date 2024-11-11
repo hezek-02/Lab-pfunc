@@ -7,3 +7,11 @@ ex2 = 5 + 1 + 2 + 3
 ex3 = 6 + 6 + x + 1
 
 ex5= x + 2
+
+e2x1= True == e
+
+e2x2= False == e
+
+e2x3= x == True
+
+e2x4= x == False
