@@ -27,8 +27,15 @@ freeVariables = undefined
 -- Reduce expresiones aritméticas/booleanas
 -- Construye sugerencias de la forma (LintCompCst e r)
 lintComputeConstant :: Linting Expr
-lintComputeConstant = undefined
-
+lintComputeConstant expr = case expr of 
+   Infix And (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a && b)), [LintCompCst expr (Lit (LitBool (a && b)))])
+   Infix Or (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a || b)), [LintCompCst expr (Lit (LitBool (a || b)))])
+   Infix Mult (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a * b)), [LintCompCst expr (Lit (LitInt (a * b)))])
+   Infix Div (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (a `div` b)))])   
+   Infix Add (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
+   Infix Sub (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a - b)), [LintCompCst expr (Lit (LitInt (a - b)))])
+   Infix op e1 e2  -> lintComputeConstant e2
+   _ -> (expr, [])
 
 --------------------------------------------------------------------------------
 -- Eliminación de chequeos redundantes de booleanos
@@ -119,13 +126,24 @@ lintMap = undefined
 -- Dada una transformación a nivel de expresión, se construye
 -- una transformación a nivel de función
 liftToFunc :: Linting Expr -> Linting FunDef
-liftToFunc = undefined
+liftToFunc lintExpr (FunDef name expr) = 
+  let (newExpr, suggestions) = lintExpr expr
+  in (FunDef name newExpr, suggestions)
 
 -- encadenar transformaciones:
 (>==>) :: Linting a -> Linting a -> Linting a
-lint1 >==> lint2 = undefined
+lint1 >==> lint2 = \expr -> 
+   let (expr', suggestions1) = lint1 expr
+       (expr'', suggestions2) = lint2 expr'
+   in (expr'', suggestions1 ++ suggestions2)
 
 -- aplica las transformaciones 'lints' repetidas veces y de forma incremental,
 -- hasta que ya no generen más cambios en 'func'
 lintRec :: Linting a -> Linting a
-lintRec lints func = undefined
+lintRec lints func = 
+   if null suggestions
+      then (func, [])
+      else (finalFunc, suggestions ++ moreSuggestions)
+   where
+      (func', suggestions) = lints func
+      (finalFunc, moreSuggestions) = lintRec lints func'
