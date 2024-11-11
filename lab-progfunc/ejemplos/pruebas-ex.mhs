@@ -15,3 +15,8 @@ e2x2= False == e
 e2x3= x == True
 
 e2x4= x == False
+
+e3x1= if True then 2 else 4 
+
+e3x2= if False then 2 else 4
+

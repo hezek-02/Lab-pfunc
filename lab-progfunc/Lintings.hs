@@ -62,7 +62,11 @@ lintRedBool expr = case expr of
 -- Sustitución de if con literal en la condición por la rama correspondiente
 -- Construye sugerencias de la forma (LintRedIf e r)
 lintRedIfCond :: Linting Expr
-lintRedIfCond = undefined
+lintRedIfCond expr = case expr of 
+   If (Lit (LitBool True)) exp2 exp3 -> (exp2, [LintRedIf expr exp2])
+   If (Lit (LitBool False)) exp2 exp3 -> (exp3, [LintRedIf expr exp3])
+   If e1 e2 e3 -> lintRedIfCond e1
+   _ -> (expr, []) 
 
 
 --------------------------------------------------------------------------------
