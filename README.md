@@ -18,7 +18,7 @@ Este repositorio contiene el código del laboratorio de Programación Funcional.
 Para ejecutar el linter y obtener sugerencias de optimización, puedes usar los siguientes comandos:
 
 ```sh
-ghci ./Linter.hs
+ghc ./Linter.hs
 ```
 
 ```sh
