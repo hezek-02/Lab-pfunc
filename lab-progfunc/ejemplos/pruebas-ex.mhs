@@ -2,7 +2,7 @@ add = \x -> \y -> x + y
 
 ex1 = 2 + 1 
 
-ex2 = 5 + 1 + 2 + 3
+ex2 = 5 + 1 + (2 + 3)
 
 ex3 = 6 + 6 + x + 1
 
@@ -20,3 +20,18 @@ e3x1= if True then 2 else 4
 
 e3x2= if False then 2 else 4
 
+e4x1= if a then True else b
+
+e4x2= if a then False else b
+
+e5x3= if a then b else True
+
+e5x4= if a then b else False
+
+e6x1= length a == 0
+
+e6x2= [] == a
+
+e6x3= a == []
+
+e6x1= 0 == length a
