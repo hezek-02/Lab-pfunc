@@ -1,0 +1,28 @@
+Función: foo
+**Sugerencia para:
+f1 (f2 x)
+Usar composición. Reemplazar por:
+f1 . f2
+**Sugerencia para:
+f4 (f5 x)
+Usar composición. Reemplazar por:
+f4 . f5
+**Sugerencia para:
+f6 (f7 x)
+Usar composición. Reemplazar por:
+f6 . f7
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+f1 (f2 y)
+Usar composición. Reemplazar por:
+f1 . f2
+**Sugerencia para:
+f4 (f5 y)
+Usar composición. Reemplazar por:
+f4 . f5
+**Sugerencia para:
+f6 (f7 y)
+Usar composición. Reemplazar por:
+f6 . f7
+--------------------------------------------------------------------------------

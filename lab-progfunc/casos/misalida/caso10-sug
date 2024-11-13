@@ -1,0 +1,13 @@
+Función: foo
+Sin sugerencias.
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+if True then 9 else x
+If redundante. Reemplazar por:
+9
+**Sugerencia para:
+10 + 9
+Constante. Reemplazar por:
+19
+--------------------------------------------------------------------------------

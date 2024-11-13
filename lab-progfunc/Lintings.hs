@@ -8,7 +8,13 @@ import LintTypes
 
 -- Computa la lista de variables libres de una expresión
 freeVariables :: Expr -> [Name]
-freeVariables = undefined
+freeVariables (Var x) = [x]
+freeVariables (Lit _) = []
+freeVariables (Infix _ e1 e2) = freeVariables e1 ++ freeVariables e2
+freeVariables (App e1 e2) = freeVariables e1 ++ freeVariables e2
+freeVariables (Lam x e) = filter (/= x) (freeVariables e)
+freeVariables (Case e1 e2 (x, y, e3)) = freeVariables e1 ++ freeVariables e2 ++ filter (\v -> v /= x && v /= y) (freeVariables e3)
+freeVariables (If e1 e2 e3) = freeVariables e1 ++ freeVariables e2 ++ freeVariables e3
 
 --------------------------------------------------------------------------------
 -- LINTINGS
@@ -28,8 +34,28 @@ lintComputeConstant expr = case expr of
    Infix Div (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])
    Infix Add (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
    Infix Sub (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a - b)), [LintCompCst expr (Lit (LitInt (a - b)))])
-   Infix op e1 e2  -> lintComputeConstant e2
+   Infix op expr1 expr2  -> 
+      let (expr1', suggestions1) = lintComputeConstant expr1
+          (expr2', suggestions2) = lintComputeConstant expr2
+      in (Infix op expr1' expr2', suggestions1 ++ suggestions2)
+   App e1 e2 ->
+      let (e1', suggestions1) = lintComputeConstant e1
+          (e2', suggestions2) = lintComputeConstant e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   Lam x e -> lintComputeConstant e
+   Case e1 e2 (x, y, e3) ->
+      let (e1', suggestions1) = lintComputeConstant e1
+          (e2', suggestions2) = lintComputeConstant e2
+          (e3', suggestions3) = lintComputeConstant e3
+      in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
+   If e1 e2 e3 ->
+      let (e1', suggestions1) = lintComputeConstant e1
+          (e2', suggestions2) = lintComputeConstant e2
+          (e3', suggestions3) = lintComputeConstant e3
+      in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
+
+--lintComputeConstant expr = (expr, [LintCompCst expr expr]) 
 
 --------------------------------------------------------------------------------
 -- Eliminación de chequeos redundantes de booleanos
@@ -42,8 +68,22 @@ lintRedBool (Infix Eq (Var a) (Lit (LitBool True))) = (Var a, [LintBool (Infix E
 lintRedBool (Infix Eq (Var a) (Lit (LitBool False))) = (App (Var "not") (Var a), [LintBool (Infix Eq (Var a) (Lit (LitBool False))) (App (Var "not") (Var a))])
 lintRedBool (Infix Eq (Lit (LitBool True)) (Var a)) = (Var a, [LintBool (Infix Eq (Lit (LitBool True)) (Var a)) (Var a)])
 lintRedBool (Infix Eq (Lit (LitBool False)) (Var a)) = (App (Var "not") (Var a), [LintBool (Infix Eq (Lit (LitBool False)) (Var a)) (App (Var "not") (Var a))])
-lintRedBool (Infix Eq e1 e2) = lintRedBool e1
+lintRedBool (Infix a2 e1 e2) = 
+   let (e1', suggestions1) = lintRedBool e1
+       (e2', suggestions2) = lintRedBool e2
+   in (Infix a2 e1' e2', suggestions1 ++ suggestions2)
+lintRedBool (App e1 e2) = 
+   let (e1', suggestions1) = lintRedBool e1
+       (e2', suggestions2) = lintRedBool e2
+   in (App e1' e2', suggestions1 ++ suggestions2)
+lintRedBool (Lam x e) = lintRedBool e
+lintRedBool (Case e1 e2 (x, y, e3)) =
+   let (e1', suggestions1) = lintRedBool e1
+       (e2', suggestions2) = lintRedBool e2
+       (e3', suggestions3) = lintRedBool e3
+   in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
 lintRedBool expr = (expr, [])
+-- lintRedBool expr = (expr, [LintBool expr expr])
 
 --------------------------------------------------------------------------------
 -- Eliminación de if redundantes
@@ -55,8 +95,27 @@ lintRedIfCond :: Linting Expr
 lintRedIfCond expr = case expr of
    If (Lit (LitBool True)) exp2 exp3 -> (exp2, [LintRedIf expr exp2])
    If (Lit (LitBool False)) exp2 exp3 -> (exp3, [LintRedIf expr exp3])
-   If e1 e2 e3 -> lintRedIfCond e1
+   If e1 e2 e3 -> 
+      let (e1', suggestions1) = lintRedIfCond e1
+          (e2', suggestions2) = lintRedIfCond e2
+          (e3', suggestions3) = lintRedIfCond e3
+      in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
+   Infix op e1 e2 -> 
+      let (e1', suggestions1) = lintRedIfCond e1
+          (e2', suggestions2) = lintRedIfCond e2
+      in (Infix op e1' e2', suggestions1 ++ suggestions2)
+   App e1 e2 -> 
+      let (e1', suggestions1) = lintRedIfCond e1
+          (e2', suggestions2) = lintRedIfCond e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   Lam x e -> lintRedIfCond e
+   Case e1 e2 (x, y, e3) -> 
+      let (e1', suggestions1) = lintRedIfCond e1
+          (e2', suggestions2) = lintRedIfCond e2
+          (e3', suggestions3) = lintRedIfCond e3
+      in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
+
 
 --------------------------------------------------------------------------------
 -- Sustitución de if por conjunción entre la condición y su rama _then_
@@ -64,7 +123,25 @@ lintRedIfCond expr = case expr of
 lintRedIfAnd :: Linting Expr
 lintRedIfAnd expr = case expr of
    If (Var a) (Var b) (Lit (LitBool False)) -> (Infix And (Var a) (Var b), [LintRedIf expr (Infix And (Var a) (Var b))])
-   If e1 e2 e3 -> lintRedIfAnd e1
+   If e1 e2 e3 -> 
+      let (e1', suggestions1) = lintRedIfAnd e1
+          (e2', suggestions2) = lintRedIfAnd e2
+          (e3', suggestions3) = lintRedIfAnd e3
+      in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
+   Infix op e1 e2 -> 
+      let (e1', suggestions1) = lintRedIfAnd e1
+          (e2', suggestions2) = lintRedIfAnd e2
+      in (Infix op e1' e2', suggestions1 ++ suggestions2)
+   App e1 e2 ->
+      let (e1', suggestions1) = lintRedIfAnd e1
+          (e2', suggestions2) = lintRedIfAnd e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   Lam x e -> lintRedIfAnd e
+   Case e1 e2 (x, y, e3) -> 
+      let (e1', suggestions1) = lintRedIfAnd e1
+          (e2', suggestions2) = lintRedIfAnd e2
+          (e3', suggestions3) = lintRedIfAnd e3
+      in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
 --------------------------------------------------------------------------------
@@ -73,7 +150,25 @@ lintRedIfAnd expr = case expr of
 lintRedIfOr :: Linting Expr
 lintRedIfOr expr = case expr of
    If (Var a) (Lit (LitBool True)) (Var b) -> (Infix Or (Var a) (Var b), [LintRedIf expr (Infix Or (Var a) (Var b))])
-   If e1 e2 e3 -> lintRedIfOr e1
+   Infix op e1 e2 -> 
+      let (e1', suggestions1) = lintRedIfOr e1
+          (e2', suggestions2) = lintRedIfOr e2
+      in (Infix op e1' e2', suggestions1 ++ suggestions2)
+   App e1 e2 ->
+      let (e1', suggestions1) = lintRedIfOr e1
+          (e2', suggestions2) = lintRedIfOr e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   Lam x e -> lintRedIfOr e
+   Case e1 e2 (x, y, e3) -> 
+      let (e1', suggestions1) = lintRedIfOr e1
+          (e2', suggestions2) = lintRedIfOr e2
+          (e3', suggestions3) = lintRedIfOr e3
+      in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
+   If e1 e2 e3 -> 
+      let (e1', suggestions1) = lintRedIfOr e1
+          (e2', suggestions2) = lintRedIfOr e2
+          (e3', suggestions3) = lintRedIfOr e3
+      in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
 --------------------------------------------------------------------------------
@@ -87,7 +182,25 @@ lintNull expr = case expr of
    Infix Eq (Lit (LitInt 0)) (App (Var "length") (Var a)) -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
    Infix Eq (Lit LitNil) (Var a)  -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
    Infix Eq (Var a) (Lit LitNil) -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
-   Infix op e2 e3 -> lintNull e2
+   Infix op e1 e2 -> 
+      let (e1', suggestions1) = lintNull e1
+          (e2', suggestions2) = lintNull e2
+      in (Infix op e1' e2', suggestions1 ++ suggestions2)
+   App e1 e2 ->
+      let (e1', suggestions1) = lintNull e1
+          (e2', suggestions2) = lintNull e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   Lam x e -> lintNull e
+   Case e1 e2 (x, y, e3) -> 
+      let (e1', suggestions1) = lintNull e1
+          (e2', suggestions2) = lintNull e2
+          (e3', suggestions3) = lintNull e3
+      in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
+   If e1 e2 e3 -> 
+      let (e1', suggestions1) = lintNull e1
+          (e2', suggestions2) = lintNull e2
+          (e3', suggestions3) = lintNull e3
+      in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 --------------------------------------------------------------------------------
 -- Eliminación de la concatenación
@@ -96,9 +209,31 @@ lintNull expr = case expr of
 -- Construye sugerencias de la forma (LintAppend e r)
 lintAppend :: Linting Expr
 lintAppend expr = case expr of
-   Infix Append (Infix Cons e1 (Lit LitNil)) e2 -> (Infix Cons e1 e2, [LintAppend expr (Infix Cons e1 e2)])
-   Infix Append e1 (Infix Cons e2 (Lit LitNil)) -> (Infix Cons e1 e2, [LintAppend expr (Infix Cons e1 e2)])
-   Infix Append e1 e2 -> lintAppend e1
+   Infix Append (Infix Cons (Var x) (Lit LitNil)) (Var y)  -> (Infix Cons (Var x) (Var y), [LintAppend expr (Infix Cons (Var x) (Var y))])
+   Infix Append (Infix Cons (Var x) (Lit LitNil)) (App n y)  -> (Infix Cons (Var x) (App n y), [LintAppend expr (Infix Cons (Var x) (App n y))])
+   Infix Append (Infix Cons exp1 (Lit LitNil)) (Var y)  -> lintAppend exp1
+   Infix Append (Infix Cons (Var x) (Lit LitNil)) exp2  -> 
+      let (e1', sugg1') = lintAppend exp2
+      in (Infix Cons (Var x) e1', [LintAppend exp2 e1'])
+   Infix op e1 e2 -> 
+      let (e1', suggestions1) = lintAppend e1
+          (e2', suggestions2) = lintAppend e2
+      in (Infix op e1' e2', suggestions1 ++ suggestions2)
+   App e1 e2 ->
+      let (e1', suggestions1) = lintAppend e1
+          (e2', suggestions2) = lintAppend e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   Lam x e -> lintAppend e
+   Case e1 e2 (x, y, e3) -> 
+      let (e1', suggestions1) = lintAppend e1
+          (e2', suggestions2) = lintAppend e2
+          (e3', suggestions3) = lintAppend e3
+      in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
+   If e1 e2 e3 ->
+      let (e1', suggestions1) = lintAppend e1
+          (e2', suggestions2) = lintAppend e2
+          (e3', suggestions3) = lintAppend e3
+      in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
 --------------------------------------------------------------------------------
@@ -107,7 +242,14 @@ lintAppend expr = case expr of
 -- se aplica en casos de la forma (f (g t)), reemplazando por (f . g) t
 -- Construye sugerencias de la forma (LintComp e r)
 lintComp :: Linting Expr
-lintComp = undefined
+lintComp expr = case expr of
+   App (Var f) (App (Var g) (Var t)) -> (Infix Comp (Var f) (Var g), [LintComp expr (Infix Comp (Var f) (Var g))])
+   App (App (Var f) (Var g)) (Var t) -> (Infix Comp (Var f) (Var g), [LintComp expr (Infix Comp (Var f) (Var g))])
+   App e1 e2 -> 
+      let (e1', suggestions1) = lintComp e1
+          (e2', suggestions2) = lintComp e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
+   _ -> (expr, [])
 
 
 --------------------------------------------------------------------------------
@@ -116,7 +258,13 @@ lintComp = undefined
 -- se aplica en casos de la forma \x -> e x, reemplazando por e
 -- Construye sugerencias de la forma (LintEta e r)
 lintEta :: Linting Expr
-lintEta = undefined
+lintEta expr = (expr, [])
+   -- Lam x (App e (Var y)) | x == y -> (e, [LintEta expr e])
+   -- Lam x (App (Var y) e) | x == y -> (e, [LintEta expr e])
+   -- Lam x e -> 
+   --    let (e', suggestions) = lintEta e
+   --    in (Lam x e', suggestions)
+   -- _ -> (expr, [])
 
 
 --------------------------------------------------------------------------------
@@ -126,7 +274,7 @@ lintEta = undefined
 -- Sustituye recursión sobre listas por `map`
 -- Construye sugerencias de la forma (LintMap f r)
 lintMap :: Linting FunDef
-lintMap = undefined
+lintMap expr = (expr, [])
 
 
 --------------------------------------------------------------------------------

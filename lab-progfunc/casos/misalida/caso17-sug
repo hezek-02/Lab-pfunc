@@ -1,0 +1,14 @@
+Función: minim
+Sin sugerencias.
+--------------------------------------------------------------------------------
+Función: f
+**Sugerencia para:
+1 + 1
+Constante. Reemplazar por:
+2
+--------------------------------------------------------------------------------
+Función: lenXa
+**Sugerencia para:
+1 * 3
+Constante. Reemplazar por:
+3

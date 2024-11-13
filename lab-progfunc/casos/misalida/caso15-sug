@@ -1,0 +1,18 @@
+Función: foo
+**Sugerencia para:
+if True then False else True
+If redundante. Reemplazar por:
+False
+**Sugerencia para:
+False && False
+Constante. Reemplazar por:
+False
+**Sugerencia para:
+if False then [] else case ls of 
+    [] -> []; 
+    (x : xs) -> f x rs : foo xs
+If redundante. Reemplazar por:
+case ls of 
+    [] -> []; 
+    (x : xs) -> f x rs : foo xs
+--------------------------------------------------------------------------------

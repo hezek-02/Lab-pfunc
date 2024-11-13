@@ -1,0 +1,34 @@
+5,8c5
+< **Sugerencia para:
+< max x (maximum xs)
+< Usar composición. Reemplazar por:
+< (max x . maximum) xs
+---
+> Sin sugerencias.
+11,20c8
+< **Sugerencia para:
+< mapF = \xs -> case xs of 
+<     [] -> []; 
+<     (x : xs) -> f x : mapF xs
+< Usar map. Reemplazar por:
+< mapF = map (\x -> f x)
+< **Sugerencia para:
+< \x -> f x
+< Usar eta-reducción. Reemplazar por:
+< f
+---
+> Sin sugerencias.
+23,26c11
+< **Sugerencia para:
+< (\r -> if n > 0 then x : r else r) (take (n - 1) xs)
+< Usar composición. Reemplazar por:
+< ((\r -> if n > 0 then x : r else r) . take (n - 1)) xs
+---
+> Sin sugerencias.
+29,32c14
+< **Sugerencia para:
+< append (reverse xss)
+< Usar composición. Reemplazar por:
+< (append . reverse) xss
+---
+> Sin sugerencias.

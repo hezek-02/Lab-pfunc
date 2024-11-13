@@ -1,0 +1,23 @@
+7,10d6
+< \rs -> f x rs
+< Usar eta-reducción. Reemplazar por:
+< f x
+< **Sugerencia para:
+17c13
+<     (x : xs) -> f x : foo xs
+---
+>     (x : xs) -> f x rs : foo xs
+21,31c17
+<     (x : xs) -> f x : foo xs
+< **Sugerencia para:
+< foo = \ls -> case ls of 
+<     [] -> []; 
+<     (x : xs) -> f x : foo xs
+< Usar map. Reemplazar por:
+< foo = map (\x -> f x)
+< **Sugerencia para:
+< \x -> f x
+< Usar eta-reducción. Reemplazar por:
+< f
+---
+>     (x : xs) -> f x rs : foo xs

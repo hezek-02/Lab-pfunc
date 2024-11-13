@@ -1,0 +1,5 @@
+12,15d11
+< **Sugerencia para:
+< \x -> (\y -> y) x
+< Usar eta-reducción. Reemplazar por:
+< \y -> y

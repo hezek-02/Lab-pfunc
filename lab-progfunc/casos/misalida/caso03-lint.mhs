@@ -1,0 +1,3 @@
+foo = x + 2
+
+bar = if c then True else c && c

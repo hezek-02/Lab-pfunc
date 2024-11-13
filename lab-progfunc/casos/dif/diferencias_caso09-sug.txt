@@ -1,0 +1,30 @@
+2,13c2
+< **Sugerencia para:
+< True == True
+< Eliminar chequeo reduntante. Reemplazar por:
+< True
+< **Sugerencia para:
+< False && True
+< Constante. Reemplazar por:
+< False
+< **Sugerencia para:
+< False || True
+< Constante. Reemplazar por:
+< True
+---
+> Sin sugerencias.
+16,27c5
+< **Sugerencia para:
+< True == False
+< Eliminar chequeo reduntante. Reemplazar por:
+< False
+< **Sugerencia para:
+< True && False
+< Constante. Reemplazar por:
+< False
+< **Sugerencia para:
+< False || False
+< Constante. Reemplazar por:
+< False
+---
+> Sin sugerencias.

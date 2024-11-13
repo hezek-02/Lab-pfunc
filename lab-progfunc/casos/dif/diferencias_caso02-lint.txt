@@ -1,0 +1,20 @@
+9c9
+< foo = \b -> b || False
+---
+> foo = b || False
+11c11
+< bar = True
+---
+> bar = True == True
+13c13
+< baz = not False
+---
+> baz = False == False
+15c15
+< qux = False
+---
+> qux = True == False
+17c17
+< quux = False
+---
+> quux = False == True

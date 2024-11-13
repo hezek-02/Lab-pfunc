@@ -1,0 +1,14 @@
+1c1
+< foo = \xs -> \x -> x : xs
+---
+> foo = x : xs
+3c3
+< bar = 6 : (1 : 2 : 3 : [])
+---
+> bar = 6 : [] ++ (1 : 2 : 3 : [])
+5c5,7
+< incr = map (\x -> x + 1)
+---
+> incr = \ls -> case ls of 
+>     [] -> []; 
+>     (x : xs) -> x + 1 : [] ++ incr xs

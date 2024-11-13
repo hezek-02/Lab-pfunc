@@ -1,0 +1,5 @@
+foo = f . g
+
+incr = \xs -> (\ls -> case ls of 
+    [] -> []; 
+    (x : xs) -> (\y -> (x + 1) y) : incr xs) xs

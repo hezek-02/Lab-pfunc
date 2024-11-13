@@ -1,0 +1,3 @@
+foo = case ls of 
+    [] -> []; 
+    (x : xs) -> f x rs : foo xs

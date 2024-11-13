@@ -1,0 +1,24 @@
+Función: foo
+**Sugerencia para:
+h x y
+Usar composición. Reemplazar por:
+h . x
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+g (h x)
+Usar composición. Reemplazar por:
+g . h
+--------------------------------------------------------------------------------
+Función: baz
+**Sugerencia para:
+h x y
+Usar composición. Reemplazar por:
+h . x
+--------------------------------------------------------------------------------
+Función: qux
+**Sugerencia para:
+g (h x)
+Usar composición. Reemplazar por:
+g . h
+--------------------------------------------------------------------------------

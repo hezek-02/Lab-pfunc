@@ -1,0 +1,21 @@
+Función: foo
+Sin sugerencias.
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+True == y
+Eliminar chequeo reduntante. Reemplazar por:
+y
+**Sugerencia para:
+if True then False else True
+If redundante. Reemplazar por:
+False
+**Sugerencia para:
+x == False
+Eliminar chequeo reduntante. Reemplazar por:
+not x
+**Sugerencia para:
+y (not x)
+Usar composición. Reemplazar por:
+y . not
+--------------------------------------------------------------------------------

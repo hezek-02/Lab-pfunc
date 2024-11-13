@@ -1,0 +1,28 @@
+48,51c48
+< **Sugerencia para:
+< True == True
+< Eliminar chequeo reduntante. Reemplazar por:
+< True
+---
+> Sin sugerencias.
+54,57c51
+< **Sugerencia para:
+< False == False
+< Eliminar chequeo reduntante. Reemplazar por:
+< not False
+---
+> Sin sugerencias.
+60,63c54
+< **Sugerencia para:
+< True == False
+< Eliminar chequeo reduntante. Reemplazar por:
+< False
+---
+> Sin sugerencias.
+66,69c57
+< **Sugerencia para:
+< False == True
+< Eliminar chequeo reduntante. Reemplazar por:
+< False
+---
+> Sin sugerencias.

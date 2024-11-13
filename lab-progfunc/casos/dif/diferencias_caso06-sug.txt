@@ -1,0 +1,5 @@
+12,15d11
+< **Sugerencia para:
+< x : [] ++ (y : ys)
+< Eliminar concatenación. Reemplazar por:
+< x : (y : ys)

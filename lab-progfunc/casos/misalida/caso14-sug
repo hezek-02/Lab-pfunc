@@ -1,0 +1,40 @@
+Función: foo
+**Sugerencia para:
+0 * 3
+Constante. Reemplazar por:
+0
+**Sugerencia para:
+0 == length d
+Usar null. Reemplazar por:
+null d
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+if True then [] else x : []
+If redundante. Reemplazar por:
+[]
+**Sugerencia para:
+a == []
+Usar null. Reemplazar por:
+null a
+**Sugerencia para:
+null a y
+Usar composición. Reemplazar por:
+null . a
+--------------------------------------------------------------------------------
+Función: baz
+**Sugerencia para:
+True || False
+Constante. Reemplazar por:
+True
+**Sugerencia para:
+x : [] ++ xs
+Eliminar concatenación. Reemplazar por:
+x : xs
+--------------------------------------------------------------------------------
+Función: mapNull
+**Sugerencia para:
+length x == 0
+Usar null. Reemplazar por:
+null x
+--------------------------------------------------------------------------------

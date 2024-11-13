@@ -1,0 +1,12 @@
+Función: foo
+**Sugerencia para:
+if False then y else x + y
+If redundante. Reemplazar por:
+x + y
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+if True then y else x + y
+If redundante. Reemplazar por:
+y
+--------------------------------------------------------------------------------

@@ -1,0 +1,24 @@
+1c1
+< foo = \f -> f
+---
+> foo = \f -> \x -> f x
+3c3
+< bar = \y -> f y y
+---
+> bar = (f . y) y
+5c5
+< baz = \x -> x + 1
+---
+> baz = \x -> (\x -> x + 1) x
+7c7
+< qux = \ys -> case ys of 
+---
+> qux = \xs -> (\ys -> case ys of 
+9c9
+<     (x : xs) -> 1 + xs
+---
+>     (x : xs) -> 1 + xs) xs
+11c11
+< quux = \x -> (\z -> z + x) x
+---
+> quux = \x -> (\y -> (\z -> z + x) y) x

@@ -1,0 +1,28 @@
+21,23c21,23
+< \y -> (\x -> null a) y
+< Usar eta-reducción. Reemplazar por:
+< \x -> null a
+---
+> null a y
+> Usar composición. Reemplazar por:
+> null . a
+31,38d30
+< if x : [] ++ xs == [] then True else False
+< If redundante. Reemplazar por:
+< x : [] ++ xs == [] && True
+< **Sugerencia para:
+< x : [] ++ xs == []
+< Usar null. Reemplazar por:
+< null (x : [] ++ xs)
+< **Sugerencia para:
+48,57d39
+< **Sugerencia para:
+< mapNull = \ls -> case ls of 
+<     [] -> []; 
+<     (x : xs) -> null x : mapNull xs
+< Usar map. Reemplazar por:
+< mapNull = map (\x -> null x)
+< **Sugerencia para:
+< \x -> null x
+< Usar eta-reducción. Reemplazar por:
+< null

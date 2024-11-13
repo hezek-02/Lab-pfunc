@@ -1,0 +1,20 @@
+1c1,3
+< id = map (\b -> b && True)
+---
+> id = \xs -> case xs of 
+>     [] -> []; 
+>     (b : bs) -> if b then True else False : id bs
+3c5,7
+< neg = map not
+---
+> neg = case xs of 
+>     [] -> []; 
+>     (b : bs) -> not b : neg bs
+7c11
+<     (x : xs) -> p x && all p xs
+---
+>     (x : xs) -> if p x then all p xs else False
+11c15
+<     (x : xs) -> p x || any p xs
+---
+>     (x : xs) -> if p x then True else any p xs

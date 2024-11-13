@@ -1,0 +1,12 @@
+Función: concat
+**Sugerencia para:
+x : [] ++ xs
+Eliminar concatenación. Reemplazar por:
+x : xs
+--------------------------------------------------------------------------------
+Función: dobleConcat
+**Sugerencia para:
+y : [] ++ ys
+Eliminar concatenación. Reemplazar por:
+y : ys
+--------------------------------------------------------------------------------

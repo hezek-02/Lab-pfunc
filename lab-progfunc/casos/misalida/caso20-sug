@@ -1,0 +1,27 @@
+Función: foo
+**Sugerencia para:
+True && False
+Constante. Reemplazar por:
+False
+**Sugerencia para:
+if False then xs else []
+If redundante. Reemplazar por:
+[]
+**Sugerencia para:
+x : [] ++ xs
+Eliminar concatenación. Reemplazar por:
+x : xs
+--------------------------------------------------------------------------------
+Función: bar
+**Sugerencia para:
+2 + 4
+Constante. Reemplazar por:
+6
+**Sugerencia para:
+if True then [] else 8 : []
+If redundante. Reemplazar por:
+[]
+--------------------------------------------------------------------------------
+Función: incr
+Sin sugerencias.
+--------------------------------------------------------------------------------

@@ -1,0 +1,10 @@
+1c1
+< foo = \f -> \g -> f . g
+---
+> foo = f . g
+3c3,5
+< incr = map (\x -> x + 1)
+---
+> incr = \xs -> (\ls -> case ls of 
+>     [] -> []; 
+>     (x : xs) -> (\y -> (x + 1) y) : incr xs) xs

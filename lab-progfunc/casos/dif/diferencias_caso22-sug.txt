@@ -1,0 +1,38 @@
+2,11c2
+< **Sugerencia para:
+< if b then True else False
+< If redundante. Reemplazar por:
+< b && True
+< **Sugerencia para:
+< id = \xs -> case xs of 
+<     [] -> []; 
+<     (b : bs) -> (b && True) : id bs
+< Usar map. Reemplazar por:
+< id = map (\b -> b && True)
+---
+> Sin sugerencias.
+18,27d8
+< **Sugerencia para:
+< neg = \xs -> case xs of 
+<     [] -> []; 
+<     (b : bs) -> not b : neg bs
+< Usar map. Reemplazar por:
+< neg = map (\b -> not b)
+< **Sugerencia para:
+< \b -> not b
+< Usar eta-reducción. Reemplazar por:
+< not
+30,33c11
+< **Sugerencia para:
+< if p x then all p xs else False
+< If redundante. Reemplazar por:
+< p x && all p xs
+---
+> Sin sugerencias.
+36,39c14
+< **Sugerencia para:
+< if p x then True else any p xs
+< If redundante. Reemplazar por:
+< p x || any p xs
+---
+> Sin sugerencias.

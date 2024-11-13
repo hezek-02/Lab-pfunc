@@ -1,0 +1,40 @@
+2,5c2
+< **Sugerencia para:
+< \x -> f x
+< Usar eta-reducción. Reemplazar por:
+< f
+---
+> Sin sugerencias.
+9,11c6,8
+< \x -> f y x
+< Usar eta-reducción. Reemplazar por:
+< f y
+---
+> f y x
+> Usar composición. Reemplazar por:
+> f . y
+14,17c11
+< **Sugerencia para:
+< \x -> (\x -> x + 1) x
+< Usar eta-reducción. Reemplazar por:
+< \x -> x + 1
+---
+> Sin sugerencias.
+20,27c14
+< **Sugerencia para:
+< \xs -> (\ys -> case ys of 
+<     [] -> 0; 
+<     (x : xs) -> 1 + xs) xs
+< Usar eta-reducción. Reemplazar por:
+< \ys -> case ys of 
+<     [] -> 0; 
+<     (x : xs) -> 1 + xs
+---
+> Sin sugerencias.
+30,33c17
+< **Sugerencia para:
+< \y -> (\z -> z + x) y
+< Usar eta-reducción. Reemplazar por:
+< \z -> z + x
+---
+> Sin sugerencias.
