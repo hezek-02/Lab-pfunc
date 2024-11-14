@@ -22,5 +22,5 @@ cabal.project.local~
 .HTF/
 .ghc.environment.*
 *.txt
-casos/misalida/*
-casos/dif/*
+lab-progfunc/casos/misalida/*
+lab-progfunc/casos/dif/*
