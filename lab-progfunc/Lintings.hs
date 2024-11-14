@@ -27,7 +27,7 @@ freeVariables (If e1 e2 e3) = freeVariables e1 ++ freeVariables e2 ++ freeVariab
 -- Reduce expresiones aritméticas/booleanas
 -- Construye sugerencias de la forma (LintCompCst e r)
 lintComputeConstant :: Linting Expr
-lintComputeConstant expr = case expr of
+lintComputeConstant expr = case expr of 
    Infix And (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a && b)), [LintCompCst expr (Lit (LitBool (a && b)))])
    Infix Or (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a || b)), [LintCompCst expr (Lit (LitBool (a || b)))])
    Infix Mult (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a * b)), [LintCompCst expr (Lit (LitInt (a * b)))])
@@ -295,13 +295,14 @@ lintAppend expr = case expr of
 -- Construye sugerencias de la forma (LintComp e r)
 lintComp :: Linting Expr--f (g (h x))
 lintComp expr = case expr of
-   App (Var f) (App (Var g) (Var t)) -> (App (Infix Comp (Var f) (Var g)) (Var t), [LintComp expr (App (Infix Comp (Var f) (Var g)) (Var t))])
-   App (Var f) (App (Var g) (Lit t)) -> (App (Infix Comp (Var f) (Var g)) (Lit t), [LintComp expr (App (Infix Comp (Var f) (Var g)) (Lit t))])
-   App exp1 (App exp2 exp3) ->
+   App exp1 (App exp2 (Var x)) ->
       let (exp1', suggestions1) = lintComp exp1
           (exp2', suggestions2) = lintComp exp2
-          (exp3', suggestions3) = lintComp exp3
-      in (App (Infix Comp exp1' exp2') exp3', suggestions1 ++ suggestions2 ++ suggestions3 ++ [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')] )
+      in (App (Infix Comp exp1' exp2') (Var x), suggestions1 ++ suggestions2  ++ [LintComp (App exp1' (App exp2' (Var x))) (App (Infix Comp exp1' exp2') (Var x))] )
+   App exp1 (App exp2 (Lit x)) ->
+      let (exp1', suggestions1) = lintComp exp1
+          (exp2', suggestions2) = lintComp exp2
+      in (App (Infix Comp exp1' exp2') (Lit x), suggestions1 ++ suggestions2  ++ [LintComp (App exp1' (App exp2' (Lit x))) (App (Infix Comp exp1' exp2') (Lit x))] )   
    App e1 e2 ->
       let (e1', suggestions1) = lintComp e1
           (e2', suggestions2) = lintComp e2
@@ -373,7 +374,7 @@ lintMap (FunDef name expr) = case expr of
       | l == l' && name == name' && xs == xs' && not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
             let newExpr = App (Var "map") (Lam x e)
             in (FunDef name newExpr, [LintMap (FunDef name expr) (FunDef name newExpr)])
-   _ -> (FunDef name expr, [])
+   _ -> (FunDef name expr, [])   
 
 --------------------------------------------------------------------------------
 -- Combinación de Lintings
