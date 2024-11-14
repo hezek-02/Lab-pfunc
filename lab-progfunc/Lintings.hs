@@ -31,7 +31,7 @@ lintComputeConstant expr = case expr of
    Infix And (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a && b)), [LintCompCst expr (Lit (LitBool (a && b)))])
    Infix Or (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a || b)), [LintCompCst expr (Lit (LitBool (a || b)))])
    Infix Mult (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a * b)), [LintCompCst expr (Lit (LitInt (a * b)))])
-   Infix Div (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])
+   Infix Div (Lit (LitInt a)) (Lit (LitInt b)) -> if b /= 0 then (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])                                                  else (expr, [])
    Infix Add (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
    Infix Sub (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a - b)), [LintCompCst expr (Lit (LitInt (a - b)))])
    Infix op expr1 expr2 ->
@@ -56,8 +56,6 @@ lintComputeConstant expr = case expr of
           (e3', suggestions3) = lintComputeConstant e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
-
---lintComputeConstant expr = (expr, [LintCompCst expr expr]) 
 
 --------------------------------------------------------------------------------
 -- Eliminación de chequeos redundantes de booleanos
@@ -90,8 +88,12 @@ lintRedBool (Case e1 e2 (x, y, e3)) =
        (e2', suggestions2) = lintRedBool e2
        (e3', suggestions3) = lintRedBool e3
    in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
+lintRedBool (If e1 e2 e3) =
+   let (e1', suggestions1) = lintRedBool e1
+       (e2', suggestions2) = lintRedBool e2
+       (e3', suggestions3) = lintRedBool e3
+   in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
 lintRedBool expr = (expr, [])
--- lintRedBool expr = (expr, [LintBool expr expr])
 
 --------------------------------------------------------------------------------
 -- Eliminación de if redundantes
@@ -108,6 +110,9 @@ lintRedIfCond expr = case expr of
    If (Lit (LitBool True)) exp2 exp3 ->
       let (e2', suggestions2) = lintRedIfCond exp2
       in (e2', suggestions2 ++ [LintRedIf (If (Lit (LitBool True)) e2' exp3) e2'])
+   If (Lit (LitBool False)) exp2 exp3 ->
+      let (e3', suggestions2) = lintRedIfCond exp3
+      in (e3', suggestions2 ++ [LintRedIf (If (Lit (LitBool False)) exp2 e3') e3'])   
    If e1 e2 e3 ->
       let (e1', suggestions1) = lintRedIfCond e1
           (e2', suggestions2) = lintRedIfCond e2
@@ -217,16 +222,16 @@ lintNull expr = case expr of
    Infix Eq (Var a) (Lit LitNil) -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
    Infix Eq exp1 (Lit LitNil) ->
       let (exp1', suggestions1) = lintNull exp1
-      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (Lit LitNil)) exp1'])
+      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (Lit LitNil)) (App (Var "null") exp1')])
    Infix Eq (Lit LitNil) exp2 ->
       let (exp2', suggestions2) = lintNull exp2
-      in (exp2', suggestions2 ++ [LintNull (Infix Eq (Lit LitNil) exp2') exp2'])
+      in (exp2', suggestions2 ++ [LintNull (Infix Eq (Lit LitNil) exp2') (App (Var "null")  exp2')])
    Infix Eq exp1 (App (Var "length") (Lit (LitInt 0))) ->
       let (exp1', suggestions1) = lintNull exp1
-      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (App (Var "length") (Lit (LitInt 0)))) exp1'])
+      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (App (Var "length") (Lit (LitInt 0)))) (App (Var "null")  exp1')])
    Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2 ->
       let (exp2', suggestions2) = lintNull exp2
-      in (exp2', suggestions2 ++ [LintNull (Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2') exp2'])
+      in (exp2', suggestions2 ++ [LintNull (Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2') (App (Var "null")  exp2')])
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintNull e1
           (e2', suggestions2) = lintNull e2
