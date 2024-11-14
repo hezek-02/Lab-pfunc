@@ -12,10 +12,7 @@
 < (scanl f . f z) x
 ---
 > Sin sugerencias.
-17,30c11
-< **Sugerencia para:
-< f (fst p)
-< Usar composición. Reemplazar por:
+20,30c14
 < (f . fst) p
 < **Sugerencia para:
 < (f . fst) p (snd p)
@@ -28,4 +25,4 @@
 < Usar map. Reemplazar por:
 < applyF2 = map (\p -> ((f . fst) p . snd) p)
 ---
-> Sin sugerencias.
+> f . fst

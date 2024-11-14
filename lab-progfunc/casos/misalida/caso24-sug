@@ -11,5 +11,8 @@ Función: take
 Sin sugerencias.
 --------------------------------------------------------------------------------
 Función: reverse
-Sin sugerencias.
+**Sugerencia para:
+append (reverse xss)
+Usar composición. Reemplazar por:
+append . reverse
 --------------------------------------------------------------------------------

@@ -25,10 +25,7 @@
 < ((\r -> if n > 0 then x : r else r) . take (n - 1)) xs
 ---
 > Sin sugerencias.
-29,32c14
-< **Sugerencia para:
-< append (reverse xss)
-< Usar composición. Reemplazar por:
+32c17
 < (append . reverse) xss
 ---
-> Sin sugerencias.
+> append . reverse

@@ -8,5 +8,8 @@ Función: scanl
 Sin sugerencias.
 --------------------------------------------------------------------------------
 Función: applyF2
-Sin sugerencias.
+**Sugerencia para:
+f (fst p)
+Usar composición. Reemplazar por:
+f . fst
 --------------------------------------------------------------------------------

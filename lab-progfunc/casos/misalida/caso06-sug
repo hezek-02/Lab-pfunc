@@ -9,4 +9,8 @@ Función: dobleConcat
 y : [] ++ ys
 Eliminar concatenación. Reemplazar por:
 y : ys
+**Sugerencia para:
+x : [] ++ (y : ys)
+Eliminar concatenación. Reemplazar por:
+x : (y : ys)
 --------------------------------------------------------------------------------

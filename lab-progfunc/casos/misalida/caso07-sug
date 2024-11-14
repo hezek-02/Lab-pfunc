@@ -2,10 +2,7 @@ Función: foo
 Sin sugerencias.
 --------------------------------------------------------------------------------
 Función: bar
-**Sugerencia para:
-f y x
-Usar composición. Reemplazar por:
-f . y
+Sin sugerencias.
 --------------------------------------------------------------------------------
 Función: baz
 Sin sugerencias.

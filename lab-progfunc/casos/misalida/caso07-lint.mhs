@@ -1,6 +1,6 @@
 foo = \f -> \x -> f x
 
-bar = (f . y) y
+bar = \y -> (\x -> f y x) y
 
 baz = \x -> (\x -> x + 1) x
 

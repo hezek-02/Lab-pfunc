@@ -1,12 +1,15 @@
 
+e7x1 = e:[] ++ es
+
 e7x2 = x:[] ++ bar le
+
+e7x3 = (x:[] ++ xs) ++ (y:[] ++ ys)
 
 e7x4 = x:[] ++ (y:[] ++ ys)
 
-e7x1 = e:[] ++ es
-
-e7x3 = (x:[] ++ xs) ++ (y:[] ++ ys)
 -- x:xs ++ y:ys
-e7x4 = ((x:[] ++ xs) ++ (y:[] ++ ys)) ++ es
+e7x5 = ((x:[] ++ xs) ++ (y:[] ++ ys)) ++ es
 
 e8x1 = (f (g t))
+
+bar = \x -> 5 + x + 1 + 3

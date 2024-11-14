@@ -9,6 +9,6 @@
 9c9,11
 < applyF2 = map (\p -> ((f . fst) p . snd) p)
 ---
-> applyF2 = \ps -> case ps of 
+> applyF2 = case ps of 
 >     [] -> []; 
->     (p : ps) -> f (fst p) (snd p) : applyF2 ps
+>     (p : ps) -> (f . fst) (snd p) : applyF2 ps

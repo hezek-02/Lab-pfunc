@@ -1,8 +1,5 @@
 Función: foo
-**Sugerencia para:
-h x y
-Usar composición. Reemplazar por:
-h . x
+Sin sugerencias.
 --------------------------------------------------------------------------------
 Función: bar
 **Sugerencia para:
@@ -11,10 +8,7 @@ Usar composición. Reemplazar por:
 g . h
 --------------------------------------------------------------------------------
 Función: baz
-**Sugerencia para:
-h x y
-Usar composición. Reemplazar por:
-h . x
+Sin sugerencias.
 --------------------------------------------------------------------------------
 Función: qux
 **Sugerencia para:

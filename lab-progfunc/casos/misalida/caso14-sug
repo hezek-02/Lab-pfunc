@@ -17,10 +17,6 @@ If redundante. Reemplazar por:
 a == []
 Usar null. Reemplazar por:
 null a
-**Sugerencia para:
-null a y
-Usar composición. Reemplazar por:
-null . a
 --------------------------------------------------------------------------------
 Función: baz
 **Sugerencia para:

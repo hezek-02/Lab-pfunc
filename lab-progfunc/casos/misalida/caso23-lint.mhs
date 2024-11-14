@@ -6,6 +6,6 @@ scanl = \f -> \z -> \xs -> z : case xs of
     [] -> []; 
     (x : xs) -> scanl f (f z x) xs
 
-applyF2 = \ps -> case ps of 
+applyF2 = case ps of 
     [] -> []; 
-    (p : ps) -> f (fst p) (snd p) : applyF2 ps
+    (p : ps) -> (f . fst) (snd p) : applyF2 ps

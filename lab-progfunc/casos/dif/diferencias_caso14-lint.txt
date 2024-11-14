@@ -1,7 +1,7 @@
 3c3
 < bar = \x -> null a
 ---
-> bar = null . a
+> bar = null a y
 5c5
 < baz = null (x : xs) && True
 ---
