@@ -45,14 +45,26 @@ Eliminar chequeo reduntante. Reemplazar por:
 b
 --------------------------------------------------------------------------------
 Función: bar
-Sin sugerencias.
+**Sugerencia para:
+True == True
+Eliminar chequeo reduntante. Reemplazar por:
+True
 --------------------------------------------------------------------------------
 Función: baz
-Sin sugerencias.
+**Sugerencia para:
+False == False
+Eliminar chequeo reduntante. Reemplazar por:
+not False
 --------------------------------------------------------------------------------
 Función: qux
-Sin sugerencias.
+**Sugerencia para:
+True == False
+Eliminar chequeo reduntante. Reemplazar por:
+False
 --------------------------------------------------------------------------------
 Función: quux
-Sin sugerencias.
+**Sugerencia para:
+False == True
+Eliminar chequeo reduntante. Reemplazar por:
+False
 --------------------------------------------------------------------------------

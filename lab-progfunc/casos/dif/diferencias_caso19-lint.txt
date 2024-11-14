@@ -1,8 +1,0 @@
-1c1
-< foo = \y -> y + 1
----
-> foo = \x -> (\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y) x
-3c3
-< bar = (\y -> y) . not
----
-> bar = y . not

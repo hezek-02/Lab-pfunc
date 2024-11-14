@@ -1,14 +1,4 @@
-3c3
-< bar = \x -> null a
----
-> bar = null a y
 5c5
 < baz = null (x : xs) && True
 ---
-> baz = if x : xs == [] then True else False
-7c7,9
-< mapNull = map null
----
-> mapNull = case ls of 
->     [] -> []; 
->     (x : xs) -> null x : mapNull xs
+> baz = x : xs && True

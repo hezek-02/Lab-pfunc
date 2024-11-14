@@ -1,5 +1,12 @@
 Función: foo
-Sin sugerencias.
+**Sugerencia para:
+x == True
+Eliminar chequeo reduntante. Reemplazar por:
+x
+**Sugerencia para:
+if c then x else False
+If redundante. Reemplazar por:
+c && x
 --------------------------------------------------------------------------------
 Función: bar
 **Sugerencia para:

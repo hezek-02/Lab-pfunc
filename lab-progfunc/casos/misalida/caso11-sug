@@ -9,4 +9,8 @@ Función: bar
 if True then y else x + y
 If redundante. Reemplazar por:
 y
+**Sugerencia para:
+\x -> (\y -> y) x
+Usar eta-reducción. Reemplazar por:
+\y -> y
 --------------------------------------------------------------------------------

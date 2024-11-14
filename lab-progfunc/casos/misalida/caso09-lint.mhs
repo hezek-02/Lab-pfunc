@@ -1,5 +1,5 @@
-foo = False && True == True || True
+foo = True
 
-bar = True && True == False || False
+bar = False
 
 baz = x

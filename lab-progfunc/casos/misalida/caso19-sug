@@ -1,5 +1,24 @@
 Función: foo
-Sin sugerencias.
+**Sugerencia para:
+\x -> (\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y) x
+Usar eta-reducción. Reemplazar por:
+\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y
+**Sugerencia para:
+\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y
+Usar eta-reducción. Reemplazar por:
+\x -> (\y -> (\x -> (\y -> y + 1) x) y) x
+**Sugerencia para:
+\x -> (\y -> (\x -> (\y -> y + 1) x) y) x
+Usar eta-reducción. Reemplazar por:
+\y -> (\x -> (\y -> y + 1) x) y
+**Sugerencia para:
+\y -> (\x -> (\y -> y + 1) x) y
+Usar eta-reducción. Reemplazar por:
+\x -> (\y -> y + 1) x
+**Sugerencia para:
+\x -> (\y -> y + 1) x
+Usar eta-reducción. Reemplazar por:
+\y -> y + 1
 --------------------------------------------------------------------------------
 Función: bar
 **Sugerencia para:
@@ -15,7 +34,11 @@ x == False
 Eliminar chequeo reduntante. Reemplazar por:
 not x
 **Sugerencia para:
-y (not x)
+(\y -> y) (not x)
 Usar composición. Reemplazar por:
-y . not
+((\y -> y) . not) x
+**Sugerencia para:
+\x -> ((\y -> y) . not) x
+Usar eta-reducción. Reemplazar por:
+(\y -> y) . not
 --------------------------------------------------------------------------------

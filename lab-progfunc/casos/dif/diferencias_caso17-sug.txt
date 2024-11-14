@@ -1,28 +1,9 @@
-15,52d14
-< **Sugerencia para:
-< 0 + 3
-< Constante. Reemplazar por:
-< 3
-< **Sugerencia para:
-< 3 - 2
-< Constante. Reemplazar por:
-< 1
-< --------------------------------------------------------------------------------
-< Función: id
-< Sin sugerencias.
-< --------------------------------------------------------------------------------
-< Función: len
-< **Sugerencia para:
-< if True then \xs -> flip lenXa 1 xs else id
-< If redundante. Reemplazar por:
-< \xs -> flip lenXa 1 xs
-< **Sugerencia para:
-< \xs -> flip lenXa 1 xs
-< Usar eta-reducción. Reemplazar por:
-< flip lenXa 1
-< --------------------------------------------------------------------------------
-< Función: incr
-< **Sugerencia para:
+22a23,26
+> **Sugerencia para:
+> 0 - 1
+> Constante. Reemplazar por:
+> -1
+39,46d42
 < id (id (1 + x))
 < Usar composición. Reemplazar por:
 < (id . id) (1 + x)
@@ -31,9 +12,11 @@
 < Usar composición. Reemplazar por:
 < (id . (id . id)) (1 + x)
 < **Sugerencia para:
-< incr = \xs -> case xs of 
-<     [] -> []; 
+49c45
 <     (x : xs) -> (id . (id . id)) (1 + x) : incr xs
-< Usar map. Reemplazar por:
+---
+>     (x : xs) -> id (id (id (1 + x))) : incr xs
+51c47
 < incr = map (\x -> (id . (id . id)) (1 + x))
-< --------------------------------------------------------------------------------
+---
+> incr = map (\x -> id (id (id (1 + x))))

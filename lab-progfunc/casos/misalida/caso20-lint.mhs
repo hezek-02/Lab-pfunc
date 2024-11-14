@@ -1,7 +1,5 @@
-foo = x : xs
+foo = \xs -> \x -> x : xs
 
-bar = 6 : [] ++ (1 : 2 : 3 : [])
+bar = 6 : (1 : 2 : 3 : [])
 
-incr = \ls -> case ls of 
-    [] -> []; 
-    (x : xs) -> x + 1 : [] ++ incr xs
+incr = map (\x -> x + 1)

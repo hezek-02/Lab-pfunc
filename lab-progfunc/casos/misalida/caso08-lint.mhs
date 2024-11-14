@@ -1,6 +1,4 @@
-incr = \ls -> case ls of 
-    [] -> []; 
-    (x : xs) -> x + 1 : incr xs
+incr = map (\x -> x + 1)
 
 nop0 = \ls -> case ls of 
     [] -> []; 
@@ -32,9 +30,7 @@ baz_xs1 = True
 
 baz_xs2 = True
 
-baz = \ls -> case ls of 
-    [] -> []; 
-    (x : xs) -> (x && baz_xs0 && baz_xs1 && baz_xs2) : baz xs
+baz = map (\x -> x && baz_xs0 && baz_xs1 && baz_xs2)
 
 badprec = \ls -> case ls of 
     [] -> []; 

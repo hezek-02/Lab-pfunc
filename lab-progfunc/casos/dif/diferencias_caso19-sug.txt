@@ -1,35 +1,32 @@
-2,21c2
-< **Sugerencia para:
+3c3
 < \x -> (\y -> y + 1) x
-< Usar eta-reducción. Reemplazar por:
+---
+> \x -> (\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y) x
+5c5
 < \y -> y + 1
-< **Sugerencia para:
+---
+> \y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y
+7c7
 < \y -> (\y -> y + 1) y
-< Usar eta-reducción. Reemplazar por:
+---
+> \y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y
+9c9
 < \y -> y + 1
-< **Sugerencia para:
+---
+> \x -> (\y -> (\x -> (\y -> y + 1) x) y) x
+11c11
 < \x -> (\y -> y + 1) x
-< Usar eta-reducción. Reemplazar por:
+---
+> \x -> (\y -> (\x -> (\y -> y + 1) x) y) x
+13c13
 < \y -> y + 1
-< **Sugerencia para:
+---
+> \y -> (\x -> (\y -> y + 1) x) y
+15c15
 < \y -> (\y -> y + 1) y
-< Usar eta-reducción. Reemplazar por:
-< \y -> y + 1
-< **Sugerencia para:
-< \x -> (\y -> y + 1) x
-< Usar eta-reducción. Reemplazar por:
+---
+> \y -> (\x -> (\y -> y + 1) x) y
+17c17
 < \y -> y + 1
 ---
-> Sin sugerencias.
-37c18
-< (\y -> y) (not x)
----
-> y (not x)
-39,43c20
-< ((\y -> y) . not) x
-< **Sugerencia para:
-< \x -> ((\y -> y) . not) x
-< Usar eta-reducción. Reemplazar por:
-< (\y -> y) . not
----
-> y . not
+> \x -> (\y -> y + 1) x

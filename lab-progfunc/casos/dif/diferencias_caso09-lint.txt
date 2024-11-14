@@ -1,8 +1,0 @@
-1c1
-< foo = True
----
-> foo = False && True == True || True
-3c3
-< bar = False
----
-> bar = True && True == False || False

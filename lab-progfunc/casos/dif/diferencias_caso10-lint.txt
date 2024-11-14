@@ -1,8 +1,0 @@
-1c1
-< foo = \c -> \x -> c && x
----
-> foo = \c -> \x -> if c then x == True else False
-3c3
-< bar = \x -> 19
----
-> bar = 19

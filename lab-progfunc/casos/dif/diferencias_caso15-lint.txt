@@ -1,6 +1,0 @@
-1c1,3
-< foo = map f
----
-> foo = case ls of 
->     [] -> []; 
->     (x : xs) -> f x rs : foo xs

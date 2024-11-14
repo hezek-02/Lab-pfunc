@@ -1,15 +1,11 @@
-id = \xs -> case xs of 
-    [] -> []; 
-    (b : bs) -> if b then True else False : id bs
+id = map (\b -> b && True)
 
-neg = case xs of 
-    [] -> []; 
-    (b : bs) -> not b : neg bs
+neg = map not
 
 all = \p -> \xs -> case xs of 
     [] -> True; 
-    (x : xs) -> if p x then all p xs else False
+    (x : xs) -> p x && all p xs
 
 any = \p -> \xs -> case xs of 
     [] -> True; 
-    (x : xs) -> if p x then True else any p xs
+    (x : xs) -> p x || any p xs

@@ -1,20 +1,16 @@
 #!/bin/bash
-
 rm -f Linter *.o *.hi # Eliminar archivos anteriores
 rm -f casos/misalida/* casos/dif/* # Eliminar archivos de salida anteriores
-
 # Compilar Linter.hs
 ghc Linter.hs 
-
 # Crear directorios si no existen
-mkdir -p casos/misalida casos/dif
-
+mkdir -p casos/misalida 
+mkdir -p casos/dif
 # Inicializar contadores
 bien_lint=0
 mal_lint=0
 bien_sug=0
 mal_sug=0
-
 # Ejecutar Linter para cada caso y generar archivos de salida
 for i in {01..24}
 do

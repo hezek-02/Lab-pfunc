@@ -1,26 +1,25 @@
-5,8d4
-< (f . g) x
-< **Sugerencia para:
-< \x -> (f . g) x
-< Usar eta-reducción. Reemplazar por:
-12,29c8
-< **Sugerencia para:
+13,16d12
 < \y -> (x + 1) y
 < Usar eta-reducción. Reemplazar por:
 < x + 1
 < **Sugerencia para:
-< \xs -> (\ls -> case ls of 
-<     [] -> []; 
+19c15
 <     (x : xs) -> x + 1 : incr xs) xs
-< Usar eta-reducción. Reemplazar por:
-< \ls -> case ls of 
-<     [] -> []; 
+---
+>     (x : xs) -> (\y -> (x + 1) y) : incr xs) xs
+23c19
 <     (x : xs) -> x + 1 : incr xs
-< **Sugerencia para:
-< incr = \ls -> case ls of 
-<     [] -> []; 
+---
+>     (x : xs) -> (\y -> (x + 1) y) : incr xs
+27c23
 <     (x : xs) -> x + 1 : incr xs
-< Usar map. Reemplazar por:
+---
+>     (x : xs) -> (\y -> (x + 1) y) : incr xs
+29c25,29
 < incr = map (\x -> x + 1)
 ---
-> Sin sugerencias.
+> incr = map (\x -> \y -> (x + 1) y)
+> **Sugerencia para:
+> \y -> (x + 1) y
+> Usar eta-reducción. Reemplazar por:
+> x + 1

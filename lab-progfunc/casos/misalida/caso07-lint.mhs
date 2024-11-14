@@ -1,11 +1,11 @@
-foo = \f -> \x -> f x
+foo = \f -> f
 
-bar = \y -> (\x -> f y x) y
+bar = \y -> f y y
 
-baz = \x -> (\x -> x + 1) x
+baz = \x -> x + 1
 
-qux = \xs -> (\ys -> case ys of 
+qux = \ys -> case ys of 
     [] -> 0; 
-    (x : xs) -> 1 + xs) xs
+    (x : xs) -> 1 + xs
 
-quux = \x -> (\y -> (\z -> z + x) y) x
+quux = \x -> (\z -> z + x) x

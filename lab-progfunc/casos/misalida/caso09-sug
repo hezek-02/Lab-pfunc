@@ -1,8 +1,30 @@
 Función: foo
-Sin sugerencias.
+**Sugerencia para:
+True == True
+Eliminar chequeo reduntante. Reemplazar por:
+True
+**Sugerencia para:
+False && True
+Constante. Reemplazar por:
+False
+**Sugerencia para:
+False || True
+Constante. Reemplazar por:
+True
 --------------------------------------------------------------------------------
 Función: bar
-Sin sugerencias.
+**Sugerencia para:
+True == False
+Eliminar chequeo reduntante. Reemplazar por:
+False
+**Sugerencia para:
+True && False
+Constante. Reemplazar por:
+False
+**Sugerencia para:
+False || False
+Constante. Reemplazar por:
+False
 --------------------------------------------------------------------------------
 Función: baz
 **Sugerencia para:
