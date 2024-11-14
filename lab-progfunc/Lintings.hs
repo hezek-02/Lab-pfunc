@@ -66,10 +66,15 @@ lintComputeConstant expr = case expr of
 -- Elimina chequeos de la forma e == True, True == e, e == False y False == e
 -- Construye sugerencias de la forma (LintBool e r)
 lintRedBool :: Linting Expr
-lintRedBool (Infix Eq exp1  (Lit (LitBool True))) = (exp1, [LintBool (Infix Eq exp1 (Lit (LitBool True))) exp1])
-lintRedBool (Infix Eq (Lit (LitBool True)) exp2) = (exp2, [LintBool (Infix Eq (Lit (LitBool True)) exp2) exp2])
-lintRedBool (Infix Eq exp1 (Lit (LitBool False))) = (App (Var "not") exp1, [LintBool (Infix Eq exp1 (Lit (LitBool False))) (App (Var "not") exp1)])
-lintRedBool (Infix Eq (Lit (LitBool False)) exp2) = (App (Var "not") exp2, [LintBool (Infix Eq (Lit (LitBool False)) exp2) (App (Var "not") exp2)])
+lintRedBool (Infix Eq (Lit (LitBool True))  (Lit (LitBool True))) = (Lit (LitBool True), [LintBool (Infix Eq (Lit (LitBool True)) (Lit (LitBool True))) (Lit (LitBool True))])
+lintRedBool (Infix Eq (Lit (LitBool False))  (Lit (LitBool False))) = (App (Var "not") (Lit (LitBool False)), [LintBool (Infix Eq (Lit (LitBool False)) (Lit (LitBool False))) (App (Var "not") (Lit (LitBool False)))])
+lintRedBool (Infix Eq (Lit (LitBool True))  (Lit (LitBool False))) = (Lit (LitBool False), [LintBool (Infix Eq (Lit (LitBool True)) (Lit (LitBool False))) (Lit (LitBool False))])
+lintRedBool (Infix Eq (Lit (LitBool False))  (Lit (LitBool True))) = (Lit (LitBool False), [LintBool (Infix Eq (Lit (LitBool False)) (Lit (LitBool True))) (Lit (LitBool False))])
+lintRedBool (Infix Eq (Var x)  (Lit (LitBool True))) = (Var x, [LintBool (Infix Eq (Var x) (Lit (LitBool True))) (Var x)])
+lintRedBool (Infix Eq (Lit (LitBool True)) (Var y)) = (Var y, [LintBool (Infix Eq (Lit (LitBool True)) (Var y)) (Var y)])
+lintRedBool (Infix Eq (Var x) (Lit (LitBool False))) = (App (Var "not") (Var x), [LintBool (Infix Eq (Var x) (Lit (LitBool False))) (App (Var "not") (Var x))])
+lintRedBool (Infix Eq (Lit (LitBool False)) (Var y)) = (App (Var "not") (Var y), [LintBool (Infix Eq (Lit (LitBool False)) (Var y)) (App (Var "not") (Var y))])
+
 lintRedBool (Infix a2 e1 e2) =
    let (e1', suggestions1) = lintRedBool e1
        (e2', suggestions2) = lintRedBool e2
@@ -97,8 +102,13 @@ lintRedBool expr = (expr, [])
 -- Construye sugerencias de la forma (LintRedIf e r)
 lintRedIfCond :: Linting Expr
 lintRedIfCond expr = case expr of
-   If (Lit (LitBool True)) exp2 exp3 -> (exp2, [LintRedIf expr exp2])
-   If (Lit (LitBool False)) exp2 exp3 -> (exp3, [LintRedIf expr exp3])
+   If (Lit (LitBool True)) (Var x) exp3 -> (Var x, [LintRedIf expr (Var x)])
+   If (Lit (LitBool False)) exp2 (Var x) -> (Var x, [LintRedIf expr (Var x)])
+   If (Lit (LitBool True)) (Lit e) exp3  -> (Lit e, [LintRedIf expr (Lit e)])
+   If (Lit (LitBool False)) exp2 (Lit e) -> (Lit e, [LintRedIf expr (Lit e)])
+   If (Lit (LitBool True)) exp2 exp3 ->
+      let (e2', suggestions2) = lintRedIfCond exp2
+      in (e2', suggestions2 ++ [LintRedIf (If (Lit (LitBool True)) e2' exp3) e2'])
    If e1 e2 e3 ->
       let (e1', suggestions1) = lintRedIfCond e1
           (e2', suggestions2) = lintRedIfCond e2
@@ -125,14 +135,21 @@ lintRedIfCond expr = case expr of
 
 --------------------------------------------------------------------------------
 -- Sustitución de if por conjunción entre la condición y su rama _then_
--- Construye sugerencias de la forma (LintRedIf e r)
+-- Construye sugerencias de la forma (LintRedIf e r) --if c then True else if c then c else False
 lintRedIfAnd :: Linting Expr
 lintRedIfAnd expr = case expr of
-   If (Var a) (Var b) (Lit (LitBool False)) -> (Infix And (Var a) (Var b), [LintRedIf expr (Infix And (Var a) (Var b))])
+   If (Lit e1) (Lit e2) (Lit (LitBool False)) -> (Infix And (Lit e1) (Lit e2), [LintRedIf expr (Infix And (Lit e1) (Lit e2))])
+   If (Var x) (Var y) (Lit (LitBool False)) -> (Infix And (Var x) (Var y), [LintRedIf expr (Infix And (Var x) (Var y))])
+   If (Lit e1) (Var y) (Lit (LitBool False)) -> (Infix And (Lit e1) (Var y), [LintRedIf expr (Infix And (Lit e1) (Var y))])
+   If (Var x) (Lit e2) (Lit (LitBool False)) -> (Infix And (Var x) (Lit e2), [LintRedIf expr (Infix And (Var x) (Lit e2))])
+   If exp1 expr2 (Lit (LitBool False)) ->
+      let (exp1', suggestions1) = lintRedIfAnd exp1
+          (expr2', suggestions2) = lintRedIfAnd expr2
+      in (Infix And exp1' expr2', suggestions1 ++ suggestions2 ++ [LintRedIf (If exp1' expr2' (Lit (LitBool False))) (Infix And exp1' expr2')])
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintRedIfAnd e1
-          (e2', suggestions2) = lintRedIfAnd e2
-          (e3', suggestions3) = lintRedIfAnd e3
+      let (e1', suggestions1) = lintRedIfAnd e1 --c
+          (e2', suggestions2) = lintRedIfAnd e2 -- True
+          (e3', suggestions3) = lintRedIfAnd e3-- c && c
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintRedIfAnd e1
@@ -157,7 +174,7 @@ lintRedIfAnd expr = case expr of
 -- Construye sugerencias de la forma (LintRedIf e r)
 lintRedIfOr :: Linting Expr
 lintRedIfOr expr = case expr of
-   If (Var a) (Lit (LitBool True)) (Var b) -> (Infix Or (Var a) (Var b), [LintRedIf expr (Infix Or (Var a) (Var b))])
+   If exp1 (Lit (LitBool True)) exp2 -> (Infix Or exp1 exp2, [LintRedIf expr (Infix Or exp1 exp2)])
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintRedIfOr e1
           (e2', suggestions2) = lintRedIfOr e2
