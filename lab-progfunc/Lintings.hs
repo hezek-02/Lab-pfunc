@@ -34,7 +34,7 @@ lintComputeConstant expr = case expr of
    Infix Div (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])
    Infix Add (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
    Infix Sub (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a - b)), [LintCompCst expr (Lit (LitInt (a - b)))])
-   Infix op expr1 expr2  ->
+   Infix op expr1 expr2 ->
       let (expr1', suggestions1) = lintComputeConstant expr1
           (expr2', suggestions2) = lintComputeConstant expr2
       in (Infix op expr1' expr2', suggestions1 ++ suggestions2)
@@ -74,7 +74,6 @@ lintRedBool (Infix Eq (Var x)  (Lit (LitBool True))) = (Var x, [LintBool (Infix 
 lintRedBool (Infix Eq (Lit (LitBool True)) (Var y)) = (Var y, [LintBool (Infix Eq (Lit (LitBool True)) (Var y)) (Var y)])
 lintRedBool (Infix Eq (Var x) (Lit (LitBool False))) = (App (Var "not") (Var x), [LintBool (Infix Eq (Var x) (Lit (LitBool False))) (App (Var "not") (Var x))])
 lintRedBool (Infix Eq (Lit (LitBool False)) (Var y)) = (App (Var "not") (Var y), [LintBool (Infix Eq (Lit (LitBool False)) (Var y)) (App (Var "not") (Var y))])
-
 lintRedBool (Infix a2 e1 e2) =
    let (e1', suggestions1) = lintRedBool e1
        (e2', suggestions2) = lintRedBool e2
@@ -122,7 +121,7 @@ lintRedIfCond expr = case expr of
       let (e1', suggestions1) = lintRedIfCond e1
           (e2', suggestions2) = lintRedIfCond e2
       in (App e1' e2', suggestions1 ++ suggestions2)
-   Lam x e -> 
+   Lam x e ->
       let (e', suggestions) = lintRedIfCond e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
@@ -159,7 +158,7 @@ lintRedIfAnd expr = case expr of
       let (e1', suggestions1) = lintRedIfAnd e1
           (e2', suggestions2) = lintRedIfAnd e2
       in (App e1' e2', suggestions1 ++ suggestions2)
-   Lam x e -> 
+   Lam x e ->
       let (e', suggestions) = lintRedIfAnd e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
@@ -174,7 +173,14 @@ lintRedIfAnd expr = case expr of
 -- Construye sugerencias de la forma (LintRedIf e r)
 lintRedIfOr :: Linting Expr
 lintRedIfOr expr = case expr of
-   If exp1 (Lit (LitBool True)) exp2 -> (Infix Or exp1 exp2, [LintRedIf expr (Infix Or exp1 exp2)])
+   If (Var x) (Lit (LitBool True)) (Var y) -> (Infix Or (Var x) (Var y), [LintRedIf expr (Infix Or (Var x) (Var y))])
+   If (Lit e1) (Lit (LitBool True)) (Lit e2) -> (Infix Or (Lit e1) (Lit e2), [LintRedIf expr (Infix Or (Lit e1) (Lit e2))])
+   If (Lit e1) (Lit (LitBool True)) (Var y) -> (Infix Or (Lit e1) (Var y), [LintRedIf expr (Infix Or (Lit e1) (Var y))])
+   If (Var x) (Lit (LitBool True)) (Lit e2) -> (Infix Or (Var x) (Lit e2), [LintRedIf expr (Infix Or (Var x) (Lit e2))])
+   If exp1 (Lit (LitBool True)) exp2 ->
+      let (exp1', suggestions1) = lintRedIfOr exp1
+          (exp2', suggestions2) = lintRedIfOr exp2
+      in (Infix Or exp1' exp2', suggestions1 ++ suggestions2 ++ [LintRedIf (If exp1' (Lit (LitBool True)) exp2') (Infix Or exp1' exp2')])
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintRedIfOr e1
           (e2', suggestions2) = lintRedIfOr e2
@@ -183,7 +189,7 @@ lintRedIfOr expr = case expr of
       let (e1', suggestions1) = lintRedIfOr e1
           (e2', suggestions2) = lintRedIfOr e2
       in (App e1' e2', suggestions1 ++ suggestions2)
-   Lam x e -> 
+   Lam x e ->
       let (e', suggestions) = lintRedIfOr e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
@@ -209,6 +215,18 @@ lintNull expr = case expr of
    Infix Eq (Lit (LitInt 0)) (App (Var "length") (Var a)) -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
    Infix Eq (Lit LitNil) (Var a)  -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
    Infix Eq (Var a) (Lit LitNil) -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
+   Infix Eq exp1 (Lit LitNil) ->
+      let (exp1', suggestions1) = lintNull exp1
+      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (Lit LitNil)) exp1'])
+   Infix Eq (Lit LitNil) exp2 ->
+      let (exp2', suggestions2) = lintNull exp2
+      in (exp2', suggestions2 ++ [LintNull (Infix Eq (Lit LitNil) exp2') exp2'])
+   Infix Eq exp1 (App (Var "length") (Lit (LitInt 0))) ->
+      let (exp1', suggestions1) = lintNull exp1
+      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (App (Var "length") (Lit (LitInt 0)))) exp1'])
+   Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2 ->
+      let (exp2', suggestions2) = lintNull exp2
+      in (exp2', suggestions2 ++ [LintNull (Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2') exp2'])
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintNull e1
           (e2', suggestions2) = lintNull e2
@@ -217,7 +235,7 @@ lintNull expr = case expr of
       let (e1', suggestions1) = lintNull e1
           (e2', suggestions2) = lintNull e2
       in (App e1' e2', suggestions1 ++ suggestions2)
-   Lam x e -> 
+   Lam x e ->
       let (e', suggestions) = lintNull e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
@@ -243,9 +261,10 @@ lintAppend expr = case expr of
    Infix Append (Infix Cons (Var x) (Lit LitNil)) (App n2 e2)  -> (Infix Cons (Var x) (App n2 e2), [LintAppend expr (Infix Cons (Var x) (App n2 e2))])
    Infix Append (Infix Cons (App n e) (Lit LitNil)) (Var y)  -> (Infix Cons (App n e) (Var y), [LintAppend expr (Infix Cons (App n e) (Var y))])
    Infix Append (Infix Cons (App n e) (Lit LitNil)) (App n2 e2)  -> (Infix Cons (App n e) (App n2 e2), [LintAppend expr (Infix Cons (App n e) (App n2 e2))])
-   Infix Append (Infix Cons (Var x) (Lit LitNil)) (Infix Cons e1 e2)  -> (Infix Cons (Var x) (Infix Cons e1 e2), [LintAppend expr (Infix Cons (Var x) (Infix Cons e1 e2))])
-   Infix Append (Infix Cons (App n e) (Lit LitNil)) (Infix Cons e1 e2)  -> (Infix Cons (App n e) (Infix Cons e1 e2), [LintAppend expr (Infix Cons (App n e) (Infix Cons e1 e2))])
-   --TODO CROSS FIRE
+   Infix Append (Infix Cons exp1 (Lit LitNil)) exp2 ->
+      let (exp1', suggestions1) = lintAppend exp1
+          (exp2', suggestions2) = lintAppend exp2
+      in (Infix Cons exp1' exp2', suggestions1 ++ suggestions2 ++ [LintAppend (Infix Append (Infix Cons exp1' (Lit LitNil)) exp2') (Infix Cons exp1' exp2')])
    Infix op e1 e2 -> --generales recursion de exploracion
       let (e1', suggestions1) = lintAppend e1
           (e2', suggestions2) = lintAppend e2
@@ -254,7 +273,7 @@ lintAppend expr = case expr of
       let (e1', suggestions1) = lintAppend e1
           (e2', suggestions2) = lintAppend e2
       in (App e1' e2', suggestions1 ++ suggestions2)
-   Lam x e -> 
+   Lam x e ->
       let (e', suggestions) = lintAppend e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
@@ -274,9 +293,15 @@ lintAppend expr = case expr of
 --------------------------------------------------------------------------------
 -- se aplica en casos de la forma (f (g t)), reemplazando por (f . g) t
 -- Construye sugerencias de la forma (LintComp e r)
-lintComp :: Linting Expr
+lintComp :: Linting Expr--f (g (h x))
 lintComp expr = case expr of
-   App (Var f) (App (Var g) (Var t)) -> (Infix Comp (Var f) (Var g), [LintComp expr (Infix Comp (Var f) (Var g))])
+   App (Var f) (App (Var g) (Var t)) -> (App (Infix Comp (Var f) (Var g)) (Var t), [LintComp expr (App (Infix Comp (Var f) (Var g)) (Var t))])
+   App (Var f) (App (Var g) (Lit t)) -> (App (Infix Comp (Var f) (Var g)) (Lit t), [LintComp expr (App (Infix Comp (Var f) (Var g)) (Lit t))])
+   App exp1 (App exp2 exp3) ->
+      let (exp1', suggestions1) = lintComp exp1
+          (exp2', suggestions2) = lintComp exp2
+          (exp3', suggestions3) = lintComp exp3
+      in (App (Infix Comp exp1' exp2') exp3', suggestions1 ++ suggestions2 ++ suggestions3 ++ [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')] )
    App e1 e2 ->
       let (e1', suggestions1) = lintComp e1
           (e2', suggestions2) = lintComp e2
@@ -285,7 +310,7 @@ lintComp expr = case expr of
       let (e1', suggestions1) = lintComp e1
           (e2', suggestions2) = lintComp e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
-   Lam x e -> 
+   Lam x e ->
       let (e', suggestions) = lintComp e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
@@ -306,11 +331,13 @@ lintComp expr = case expr of
 --------------------------------------------------------------------------------
 -- se aplica en casos de la forma \x -> e x, reemplazando por e
 -- Construye sugerencias de la forma (LintEta e r)
-lintEta :: Linting Expr
-lintEta expr = case expr of
+lintEta :: Linting Expr -- < \x -> (\y -> y + 1) x
+lintEta expr = case expr of --hallar forma de llegar al fondo
    Lam x (App e (Var y)) ->
-      if x `notElem` freeVariables e && x == y then (e, [LintEta expr e])
-      else (expr, [])
+      if x == y && notElem x (freeVariables e)
+         then (e, [LintEta expr e])
+         else let (e', suggestions) = lintEta e
+              in (Lam x (App e' (Var y)), suggestions)
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintEta e1
           (e2', suggestions2) = lintEta e2
@@ -341,8 +368,12 @@ lintEta expr = case expr of
 -- Sustituye recursión sobre listas por `map`
 -- Construye sugerencias de la forma (LintMap f r)
 lintMap :: Linting FunDef
-lintMap expr = (expr, [])
-
+lintMap (FunDef name expr) = case expr of
+   Lam l (Case (Var l') (Lit LitNil) (x, xs, Infix Cons e (App (Var name') (Var xs'))))
+      | l == l' && name == name' && xs == xs' && not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
+            let newExpr = App (Var "map") (Lam x e)
+            in (FunDef name newExpr, [LintMap (FunDef name expr) (FunDef name newExpr)])
+   _ -> (FunDef name expr, [])
 
 --------------------------------------------------------------------------------
 -- Combinación de Lintings
