@@ -10,4 +10,4 @@ id = \x -> x
 
 len = flip lenXa 1
 
-incr = map (\x -> (id . id . id) (1 + x))
+incr = map (\x -> (id . (id . id)) (1 + x))

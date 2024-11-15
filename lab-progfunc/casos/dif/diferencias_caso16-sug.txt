@@ -1,96 +1,10 @@
-3c3
-< g (h x y z)
----
-> f (g (h x y z))
-5c5
-< (g . h x y) z
----
-> (f . g) (h x y z)
-7c7
-< f ((g . h x y) z)
----
-> (f . g) (h x y z)
-9c9
-< (f . (g . h x y)) z
----
-> (f . g . h x y) z
-13c13
-< g (h x)
----
-> f (g (h x))
-15c15
-< (g . h) x
----
-> (f . g) (h x)
-17c17
-< f ((g . h) x)
----
-> (f . g) (h x)
-19c19
-< (f . (g . h)) x
----
-> (f . g . h) x
-23c23
-< g (h x y z)
----
-> f (g (h x y z))
-25c25
-< (g . h x y) z
----
-> (f . g) (h x y z)
-27c27
-< f ((g . h x y) z)
----
-> (f . g) (h x y z)
-29c29
-< (f . (g . h x y)) z
----
-> (f . g . h x y) z
-31c31
-< \z -> (f . (g . h x y)) z
----
-> \z -> (f . g . h x y) z
-33c33
-< f . (g . h x y)
----
-> f . g . h x y
-37c37
-< g (h x)
----
-> f (g (h x))
-39c39
-< (g . h) x
----
-> (f . g) (h x)
-41,45c41
-< f ((g . h) x)
-< Usar composición. Reemplazar por:
-< (f . (g . h)) x
+40a41,44
+> \z -> f ((g . h) x) y z
+> Usar eta-reducción. Reemplazar por:
+> f ((g . h) x) y
+> **Sugerencia para:
+44,47d47
 < **Sugerencia para:
 < \z -> (f . (g . h)) x y z
----
-> \z -> (f . g) (h x) y z
-47c43,47
+< Usar eta-reducción. Reemplazar por:
 < (f . (g . h)) x y
----
-> (f . g) (h x) y
-> **Sugerencia para:
-> (f . g) (h x)
-> Usar composición. Reemplazar por:
-> (f . g . h) x
-49c49
-< \y -> (f . (g . h)) x y
----
-> \y -> (f . g . h) x y
-51c51
-< (f . (g . h)) x
----
-> (f . g . h) x
-53c53
-< \x -> (f . (g . h)) x
----
-> \x -> (f . g . h) x
-55c55
-< f . (g . h)
----
-> f . g . h

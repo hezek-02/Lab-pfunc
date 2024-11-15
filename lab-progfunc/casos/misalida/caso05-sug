@@ -6,21 +6,21 @@ Usar composición. Reemplazar por:
 --------------------------------------------------------------------------------
 Función: bar
 **Sugerencia para:
-(\x -> x + 1) (f ((\y -> y - 2) z))
+f ((\y -> y - 2) z)
 Usar composición. Reemplazar por:
-((\x -> x + 1) . f) ((\y -> y - 2) z)
+(f . (\y -> y - 2)) z
 **Sugerencia para:
-((\x -> x + 1) . f) ((\y -> y - 2) z)
+(\x -> x + 1) ((f . (\y -> y - 2)) z)
 Usar composición. Reemplazar por:
-((\x -> x + 1) . f . (\y -> y - 2)) z
+((\x -> x + 1) . (f . (\y -> y - 2))) z
 --------------------------------------------------------------------------------
 Función: baz
 **Sugerencia para:
-f (g (h x))
+g (h x)
 Usar composición. Reemplazar por:
-(f . g) (h x)
+(g . h) x
 **Sugerencia para:
-(f . g) (h x)
+f ((g . h) x)
 Usar composición. Reemplazar por:
-(f . g . h) x
+(f . (g . h)) x
 --------------------------------------------------------------------------------

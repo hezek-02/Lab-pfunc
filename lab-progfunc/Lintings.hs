@@ -301,13 +301,12 @@ lintAppend expr = case expr of
 -- Construye sugerencias de la forma (LintComp e r)
 lintComp :: Linting Expr--f (g (h x))
 lintComp expr = case expr of
-   App exp1 (App exp2 (Var x)) -> ((App (Infix Comp exp1 exp2) (Var x)) , [LintComp (App exp1 (App exp2 (Var x))) (App (Infix Comp exp1 exp2) (Var x))] )
-   App exp1 (App exp2 (Lit x)) -> ((App (Infix Comp exp1 exp2) (Lit x)) , [LintComp (App exp1 (App exp2 (Lit x))) (App (Infix Comp exp1 exp2) (Lit x))] )
-   App exp1 (App exp2 exp3) ->
-      let (exp1', suggestions1) = lintComp exp1
-          (exp2', suggestions2) = lintComp exp2
-          (exp3', suggestions3) = lintComp exp3
-      in (App (Infix Comp exp1' exp2') exp3', [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')])
+   App exp1 (App exp2 (Var x)) -> (App (Infix Comp exp1 exp2) (Var x), [LintComp expr (App (Infix Comp exp1 exp2) (Var x))])
+   App exp1 (App exp2 (Lit x)) -> (App (Infix Comp exp1 exp2) (Lit x), [LintComp expr (App (Infix Comp exp1 exp2) (Lit x))])
+   App exp1 (App exp2 (Infix op (Var x) (Lit y))) -> (App (Infix Comp exp1 exp2) (Infix op (Var x) (Lit y)), [LintComp (App exp1 (App exp2 (Infix op (Var x) (Lit y)))) (App (Infix Comp exp1 exp2) (Infix op (Var x) (Lit y)))])
+   App exp1 (App exp2 (Infix op (Lit x) (Var y))) -> (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Var y)), [LintComp (App exp1 (App exp2 (Infix op (Lit x) (Var y)))) (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Var y)))])
+   App exp1 (App exp2 (Infix op (Lit x) (Lit y))) -> (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Lit y)), [LintComp (App exp1 (App exp2 (Infix op (Lit x) (Lit y)))) (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Lit y)))])
+   App exp1 (App exp2 (Infix op (Var x) (Var y))) -> (App (Infix Comp exp1 exp2) (Infix op (Var x) (Var y)), [LintComp (App exp1 (App exp2 (Infix op (Var x) (Var y)))) (App (Infix Comp exp1 exp2) (Infix op (Var x) (Var y)))])
    App e1 e2 ->
       let (e1', suggestions1) = lintComp e1
           (e2', suggestions2) = lintComp e2
@@ -330,7 +329,6 @@ lintComp expr = case expr of
           (e3', suggestions3) = lintComp e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
-
 
 --------------------------------------------------------------------------------
 -- Eta Reducción
@@ -380,6 +378,7 @@ lintMap (FunDef name expr) = case expr of
             let newExpr = App (Var "map") (Lam x e)
             in (FunDef name newExpr, [LintMap (FunDef name expr) (FunDef name newExpr)])
    _ -> (FunDef name expr, [])   
+   
 
 --------------------------------------------------------------------------------
 -- Combinación de Lintings
