@@ -29,11 +29,10 @@ freeVariables (If e1 e2 e3) = freeVariables e1 ++ freeVariables e2 ++ freeVariab
 lintComputeConstant :: Linting Expr
 lintComputeConstant expr = case expr of 
    Infix And (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a && b)), [LintCompCst expr (Lit (LitBool (a && b)))])
-   Infix Or (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a || b)), [LintCompCst expr (Lit (LitBool (a || b)))])
-   Infix Mult (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a * b)), [LintCompCst expr (Lit (LitInt (a * b)))])
-   Infix Div (Lit (LitInt a)) (Lit (LitInt b)) -> if b /= 0 then (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])                                                  else (expr, [])
-   Infix Add (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
-   Infix Sub (Lit (LitInt a)) (Lit (LitInt b)) -> (Lit (LitInt (a - b)), [LintCompCst expr (Lit (LitInt (a - b)))])
+   Infix Or (Lit (LitBool a)) (Lit (LitBool b))  -> (Lit (LitBool (a || b)), [LintCompCst expr (Lit (LitBool (a || b)))])
+   Infix Mult (Lit (LitInt a)) (Lit (LitInt b))  | a >= 0 && b >= 0 -> (Lit (LitInt (a * b)), [LintCompCst expr (Lit (LitInt (a * b)))])
+   Infix Div (Lit (LitInt a)) (Lit (LitInt b)) | a >= 0 && b >= 0 -> if b /= 0 then (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])                                                  else (expr, [])
+   Infix Add (Lit (LitInt a)) (Lit (LitInt b)) | a >= 0 && b >= 0 ->(Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
    Infix op expr1 expr2 ->
       let (expr1', suggestions1) = lintComputeConstant expr1
           (expr2', suggestions2) = lintComputeConstant expr2
@@ -222,16 +221,16 @@ lintNull expr = case expr of
    Infix Eq (Var a) (Lit LitNil) -> (App (Var "null") (Var a), [LintNull expr (App (Var "null") (Var a))])
    Infix Eq exp1 (Lit LitNil) ->
       let (exp1', suggestions1) = lintNull exp1
-      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (Lit LitNil)) (App (Var "null") exp1')])
+      in (App (Var "null") exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (Lit LitNil)) (App (Var "null") exp1')])
    Infix Eq (Lit LitNil) exp2 ->
       let (exp2', suggestions2) = lintNull exp2
-      in (exp2', suggestions2 ++ [LintNull (Infix Eq (Lit LitNil) exp2') (App (Var "null")  exp2')])
+      in (App (Var "null") exp2', suggestions2 ++ [LintNull (Infix Eq (Lit LitNil) exp2') (App (Var "null")  exp2')])
    Infix Eq exp1 (App (Var "length") (Lit (LitInt 0))) ->
       let (exp1', suggestions1) = lintNull exp1
-      in (exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (App (Var "length") (Lit (LitInt 0)))) (App (Var "null")  exp1')])
+      in (App (Var "null") exp1', suggestions1 ++ [LintNull (Infix Eq exp1' (App (Var "length") (Lit (LitInt 0)))) (App (Var "null")  exp1')])
    Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2 ->
       let (exp2', suggestions2) = lintNull exp2
-      in (exp2', suggestions2 ++ [LintNull (Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2') (App (Var "null")  exp2')])
+      in (App (Var "null") exp2', suggestions2 ++ [LintNull (Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2') (App (Var "null")  exp2')])
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintNull e1
           (e2', suggestions2) = lintNull e2
@@ -375,8 +374,8 @@ lintEta expr = case expr of --hallar forma de llegar al fondo
 -- Construye sugerencias de la forma (LintMap f r)
 lintMap :: Linting FunDef
 lintMap (FunDef name expr) = case expr of
-   Lam l (Case (Var l') (Lit LitNil) (x, xs, Infix Cons e (App (Var name') (Var xs'))))
-      | l == l' && name == name' && xs == xs' && not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
+   Lam l (Case (Var l) (Lit LitNil) (x, xs, Infix Cons e (App (Var name) (Var xs))))
+      | not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
             let newExpr = App (Var "map") (Lam x e)
             in (FunDef name newExpr, [LintMap (FunDef name expr) (FunDef name newExpr)])
    _ -> (FunDef name expr, [])   
