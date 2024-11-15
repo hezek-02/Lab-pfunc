@@ -20,10 +20,6 @@ Constante. Reemplazar por:
 3 - 2
 Constante. Reemplazar por:
 1
-**Sugerencia para:
-0 - 1
-Constante. Reemplazar por:
--1
 --------------------------------------------------------------------------------
 Función: id
 Sin sugerencias.
@@ -40,9 +36,17 @@ flip lenXa 1
 --------------------------------------------------------------------------------
 Función: incr
 **Sugerencia para:
+id (id (id (1 + x)))
+Usar composición. Reemplazar por:
+(id . id) (id (1 + x))
+**Sugerencia para:
 incr = \xs -> case xs of 
     [] -> []; 
-    (x : xs) -> id (id (id (1 + x))) : incr xs
+    (x : xs) -> (id . id) (id (1 + x)) : incr xs
 Usar map. Reemplazar por:
-incr = map (\x -> id (id (id (1 + x))))
+incr = map (\x -> (id . id) (id (1 + x)))
+**Sugerencia para:
+(id . id) (id (1 + x))
+Usar composición. Reemplazar por:
+(id . id . id) (1 + x)
 --------------------------------------------------------------------------------

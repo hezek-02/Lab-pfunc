@@ -1,8 +1,4 @@
-6c6
-<     [] -> 0 - 1 - 1 `div` 0; 
----
->     [] -> -1 - 1 `div` 0; 
 13c13
 < incr = map (\x -> (id . (id . id)) (1 + x))
 ---
-> incr = map (\x -> id (id (id (1 + x))))
+> incr = map (\x -> (id . id . id) (1 + x))

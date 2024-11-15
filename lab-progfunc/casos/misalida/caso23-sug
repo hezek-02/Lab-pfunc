@@ -15,17 +15,17 @@ Usar composición. Reemplazar por:
 --------------------------------------------------------------------------------
 Función: applyF2
 **Sugerencia para:
-f (fst p)
+f (fst p) (snd p)
 Usar composición. Reemplazar por:
-(f . fst) p
-**Sugerencia para:
-(f . fst) p (snd p)
-Usar composición. Reemplazar por:
-((f . fst) p . snd) p
+(f (fst p) . snd) p
 **Sugerencia para:
 applyF2 = \ps -> case ps of 
     [] -> []; 
-    (p : ps) -> ((f . fst) p . snd) p : applyF2 ps
+    (p : ps) -> (f (fst p) . snd) p : applyF2 ps
 Usar map. Reemplazar por:
-applyF2 = map (\p -> ((f . fst) p . snd) p)
+applyF2 = map (\p -> (f (fst p) . snd) p)
+**Sugerencia para:
+f (fst p)
+Usar composición. Reemplazar por:
+(f . fst) p
 --------------------------------------------------------------------------------

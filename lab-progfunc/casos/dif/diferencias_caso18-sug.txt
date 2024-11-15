@@ -1,20 +1,82 @@
-11,14d10
+3c3
+< f1 (f2 x)
+---
+> (f1 . f2) x ((f3 . f4) (f5 x) ((f6 (f7 x) . f8) x))
+5c5
+< (f1 . f2) x
+---
+> ((f1 . f2) x . (f3 . f4) (f5 x)) ((f6 (f7 x) . f8) x)
+7c7
+< f4 (f5 x)
+---
+> ((f1 . f2) x . (f3 . f4) (f5 x)) ((f6 (f7 x) . f8) x)
+9c9
+< (f4 . f5) x
+---
+> ((f1 . f2) x . (f3 . f4) (f5 x) . (f6 (f7 x) . f8)) x
+11c11
 < f3 ((f4 . f5) x)
-< Usar composición. Reemplazar por:
+---
+> (f3 . f4) (f5 x)
+13c13
 < (f3 . (f4 . f5)) x
+---
+> (f3 . f4 . f5) x
+18,29d17
 < **Sugerencia para:
-22a19,22
-> f3 ((f4 . f5) x)
-> Usar composición. Reemplazar por:
-> (f3 . (f4 . f5)) x
-> **Sugerencia para:
-41,44d40
-< f3 ((f4 . f5) y)
+< (f6 . f7) x (f8 x)
 < Usar composición. Reemplazar por:
-< (f3 . (f4 . f5)) y
+< ((f6 . f7) x . f8) x
 < **Sugerencia para:
-51a48,51
+< (f3 . (f4 . f5)) x (((f6 . f7) x . f8) x)
+< Usar composición. Reemplazar por:
+< ((f3 . (f4 . f5)) x . ((f6 . f7) x . f8)) x
+< **Sugerencia para:
+< (f1 . f2) x (((f3 . (f4 . f5)) x . ((f6 . f7) x . f8)) x)
+< Usar composición. Reemplazar por:
+< ((f1 . f2) x . ((f3 . (f4 . f5)) x . ((f6 . f7) x . f8))) x
+33c21
+< f1 (f2 y)
+---
+> (f1 . f2) y ((f3 . f4) (f5 y) ((f6 (f7 y) . f8) x))
+35c23
+< (f1 . f2) y
+---
+> ((f1 . f2) y . (f3 . f4) (f5 y)) ((f6 (f7 y) . f8) x)
+37c25
+< f4 (f5 y)
+---
+> ((f1 . f2) y . (f3 . f4) (f5 y)) ((f6 (f7 y) . f8) x)
+39c27,31
+< (f4 . f5) y
+---
+> ((f1 . f2) y . (f3 . f4) (f5 y) . (f6 (f7 y) . f8)) x
 > **Sugerencia para:
-> f3 ((f4 . f5) y)
-> Usar composición. Reemplazar por:
-> (f3 . (f4 . f5)) y
+> \x -> ((f1 . f2) y . (f3 . f4) (f5 y) . (f6 (f7 y) . f8)) x
+> Usar eta-reducción. Reemplazar por:
+> (f1 . f2) y . (f3 . f4) (f5 y) . (f6 (f7 y) . f8)
+41c33
+< f3 ((f4 . f5) y)
+---
+> (f3 . f4) (f5 y)
+43c35
+< (f3 . (f4 . f5)) y
+---
+> (f3 . f4 . f5) y
+48,63d39
+< **Sugerencia para:
+< (f6 . f7) y (f8 x)
+< Usar composición. Reemplazar por:
+< ((f6 . f7) y . f8) x
+< **Sugerencia para:
+< (f3 . (f4 . f5)) y (((f6 . f7) y . f8) x)
+< Usar composición. Reemplazar por:
+< ((f3 . (f4 . f5)) y . ((f6 . f7) y . f8)) x
+< **Sugerencia para:
+< (f1 . f2) y (((f3 . (f4 . f5)) y . ((f6 . f7) y . f8)) x)
+< Usar composición. Reemplazar por:
+< ((f1 . f2) y . ((f3 . (f4 . f5)) y . ((f6 . f7) y . f8))) x
+< **Sugerencia para:
+< \x -> ((f1 . f2) y . ((f3 . (f4 . f5)) y . ((f6 . f7) y . f8))) x
+< Usar eta-reducción. Reemplazar por:
+< (f1 . f2) y . ((f3 . (f4 . f5)) y . ((f6 . f7) y . f8))

@@ -33,6 +33,7 @@ lintComputeConstant expr = case expr of
    Infix Mult (Lit (LitInt a)) (Lit (LitInt b))  | a >= 0 && b >= 0 -> (Lit (LitInt (a * b)), [LintCompCst expr (Lit (LitInt (a * b)))])
    Infix Div (Lit (LitInt a)) (Lit (LitInt b)) | a >= 0 && b >= 0 -> if b /= 0 then (Lit (LitInt (div a b)), [LintCompCst expr (Lit (LitInt (div a  b)))])                                                  else (expr, [])
    Infix Add (Lit (LitInt a)) (Lit (LitInt b)) | a >= 0 && b >= 0 ->(Lit (LitInt (a + b)), [LintCompCst expr (Lit (LitInt (a + b)))])
+   Infix Sub (Lit (LitInt a)) (Lit (LitInt b)) | a > 0 && b > 0 -> (Lit (LitInt (a - b)), [LintCompCst expr (Lit (LitInt (a - b)))])
    Infix op expr1 expr2 ->
       let (expr1', suggestions1) = lintComputeConstant expr1
           (expr2', suggestions2) = lintComputeConstant expr2
@@ -55,6 +56,7 @@ lintComputeConstant expr = case expr of
           (e3', suggestions3) = lintComputeConstant e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
+
 
 --------------------------------------------------------------------------------
 -- Eliminación de chequeos redundantes de booleanos
@@ -299,14 +301,13 @@ lintAppend expr = case expr of
 -- Construye sugerencias de la forma (LintComp e r)
 lintComp :: Linting Expr--f (g (h x))
 lintComp expr = case expr of
-   App exp1 (App exp2 (Var x)) ->
+   App exp1 (App exp2 (Var x)) -> ((App (Infix Comp exp1 exp2) (Var x)) , [LintComp (App exp1 (App exp2 (Var x))) (App (Infix Comp exp1 exp2) (Var x))] )
+   App exp1 (App exp2 (Lit x)) -> ((App (Infix Comp exp1 exp2) (Lit x)) , [LintComp (App exp1 (App exp2 (Lit x))) (App (Infix Comp exp1 exp2) (Lit x))] )
+   App exp1 (App exp2 exp3) ->
       let (exp1', suggestions1) = lintComp exp1
           (exp2', suggestions2) = lintComp exp2
-      in (App (Infix Comp exp1' exp2') (Var x), suggestions1 ++ suggestions2  ++ [LintComp (App exp1' (App exp2' (Var x))) (App (Infix Comp exp1' exp2') (Var x))] )
-   App exp1 (App exp2 (Lit x)) ->
-      let (exp1', suggestions1) = lintComp exp1
-          (exp2', suggestions2) = lintComp exp2
-      in (App (Infix Comp exp1' exp2') (Lit x), suggestions1 ++ suggestions2  ++ [LintComp (App exp1' (App exp2' (Lit x))) (App (Infix Comp exp1' exp2') (Lit x))] )   
+          (exp3', suggestions3) = lintComp exp3
+      in (App (Infix Comp exp1' exp2') exp3', [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')])
    App e1 e2 ->
       let (e1', suggestions1) = lintComp e1
           (e2', suggestions2) = lintComp e2
@@ -374,8 +375,8 @@ lintEta expr = case expr of --hallar forma de llegar al fondo
 -- Construye sugerencias de la forma (LintMap f r)
 lintMap :: Linting FunDef
 lintMap (FunDef name expr) = case expr of
-   Lam l (Case (Var l) (Lit LitNil) (x, xs, Infix Cons e (App (Var name) (Var xs))))
-      | not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
+   Lam l (Case (Var l') (Lit LitNil) (x, xs, Infix Cons e (App (Var name') (Var xs'))))
+      | l == l' && name == name' && xs == xs' && not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
             let newExpr = App (Var "map") (Lam x e)
             in (FunDef name newExpr, [LintMap (FunDef name expr) (FunDef name newExpr)])
    _ -> (FunDef name expr, [])   

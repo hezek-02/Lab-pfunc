@@ -1,3 +1,6 @@
+incr = \xs -> case xs of
+  [] -> [];
+  (x : xs) -> id (id (id(1 + x))) : incr xs
 
 e7x1 = e:[] ++ es
 
