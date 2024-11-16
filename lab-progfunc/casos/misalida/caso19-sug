@@ -1,20 +1,20 @@
 Función: foo
 **Sugerencia para:
-\x -> (\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y) x
-Usar eta-reducción. Reemplazar por:
-\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y
-**Sugerencia para:
-\y -> (\x -> (\y -> (\x -> (\y -> y + 1) x) y) x) y
-Usar eta-reducción. Reemplazar por:
-\x -> (\y -> (\x -> (\y -> y + 1) x) y) x
-**Sugerencia para:
-\x -> (\y -> (\x -> (\y -> y + 1) x) y) x
-Usar eta-reducción. Reemplazar por:
-\y -> (\x -> (\y -> y + 1) x) y
-**Sugerencia para:
-\y -> (\x -> (\y -> y + 1) x) y
-Usar eta-reducción. Reemplazar por:
 \x -> (\y -> y + 1) x
+Usar eta-reducción. Reemplazar por:
+\y -> y + 1
+**Sugerencia para:
+\y -> (\y -> y + 1) y
+Usar eta-reducción. Reemplazar por:
+\y -> y + 1
+**Sugerencia para:
+\x -> (\y -> y + 1) x
+Usar eta-reducción. Reemplazar por:
+\y -> y + 1
+**Sugerencia para:
+\y -> (\y -> y + 1) y
+Usar eta-reducción. Reemplazar por:
+\y -> y + 1
 **Sugerencia para:
 \x -> (\y -> y + 1) x
 Usar eta-reducción. Reemplazar por:

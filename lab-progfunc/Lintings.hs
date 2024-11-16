@@ -268,10 +268,6 @@ lintNull expr = case expr of
 
 lintAppend :: Linting Expr
 lintAppend expr = case expr of
-   Infix Append (Infix Cons (Var x) (Lit LitNil)) (Var y)  -> (Infix Cons (Var x) (Var y), [LintAppend expr (Infix Cons (Var x) (Var y))])
-   Infix Append (Infix Cons (Var x) (Lit LitNil)) (App n2 e2)  -> (Infix Cons (Var x) (App n2 e2), [LintAppend expr (Infix Cons (Var x) (App n2 e2))])
-   Infix Append (Infix Cons (App n e) (Lit LitNil)) (Var y)  -> (Infix Cons (App n e) (Var y), [LintAppend expr (Infix Cons (App n e) (Var y))])
-   Infix Append (Infix Cons (App n e) (Lit LitNil)) (App n2 e2)  -> (Infix Cons (App n e) (App n2 e2), [LintAppend expr (Infix Cons (App n e) (App n2 e2))])
    Infix Append (Infix Cons exp1 (Lit LitNil)) exp2 ->
       let (exp1', suggestions1) = lintAppend exp1
           (exp2', suggestions2) = lintAppend exp2
@@ -306,8 +302,12 @@ lintAppend expr = case expr of
 -- Construye sugerencias de la forma (LintComp e r)
 lintComp :: Linting Expr--f (g (h x))
 lintComp expr = case expr of
-   App (Var x) (App (Var y) (Var z)) -> (App (Infix Comp (Var x) (Var y)) (Var z), [LintComp expr (App (Infix Comp (Var x) (Var y)) (Var z))])
-   App (Var x) (App (Var y) (Lit z)) -> (App (Infix Comp (Var x) (Var y)) (Lit z), [LintComp expr (App (Infix Comp (Var x) (Var y)) (Lit z))])
+   App exp1 (App exp2 (Var x)) -> (App (Infix Comp exp1 exp2) (Var x), [LintComp expr (App (Infix Comp exp1 exp2) (Var x))])
+   App exp1 (App exp2 (Lit x)) -> (App (Infix Comp exp1 exp2) (Lit x), [LintComp expr (App (Infix Comp exp1 exp2) (Lit x))])
+   App exp1 (App exp2 (Infix op (Var x) (Lit y))) -> (App (Infix Comp exp1 exp2) (Infix op (Var x) (Lit y)), [LintComp (App exp1 (App exp2 (Infix op (Var x) (Lit y)))) (App (Infix Comp exp1 exp2) (Infix op (Var x) (Lit y)))])
+   App exp1 (App exp2 (Infix op (Lit x) (Var y))) -> (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Var y)), [LintComp (App exp1 (App exp2 (Infix op (Lit x) (Var y)))) (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Var y)))])
+   App exp1 (App exp2 (Infix op (Lit x) (Lit y))) -> (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Lit y)), [LintComp (App exp1 (App exp2 (Infix op (Lit x) (Lit y)))) (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Lit y)))])
+   App exp1 (App exp2 (Infix op (Var x) (Var y))) -> (App (Infix Comp exp1 exp2) (Infix op (Var x) (Var y)), [LintComp (App exp1 (App exp2 (Infix op (Var x) (Var y)))) (App (Infix Comp exp1 exp2) (Infix op (Var x) (Var y)))])
    
    App e1 e2 ->
       let (e1', suggestions1) = lintComp e1
