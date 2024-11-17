@@ -2,6 +2,9 @@ module Lintings where
 
 import AST
 import LintTypes
+
+
+
 --------------------------------------------------------------------------------
 -- AUXILIARES
 --------------------------------------------------------------------------------
@@ -395,8 +398,7 @@ lintMap :: Linting FunDef
 lintMap (FunDef name expr) = case expr of
    Lam l (Case (Var l') (Lit LitNil) (x, xs, Infix Cons e (App (Var name') (Var xs'))))
       | l == l' && name == name' && xs == xs' && not (name `elem` freeVariables e || xs `elem` freeVariables e || l `elem` freeVariables e) ->
-            let newExpr = App (Var "map") (Lam x e)
-            in (FunDef name newExpr, [LintMap (FunDef name expr) (FunDef name newExpr)])
+      (FunDef name (App (Var "map") (Lam x e)), [LintMap (FunDef name expr) (FunDef name (App (Var "map") (Lam x e)))])
    _ -> (FunDef name expr, [])   
    
 
