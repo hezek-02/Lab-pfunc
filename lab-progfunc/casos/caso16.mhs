@@ -7,3 +7,4 @@ baz = \f -> \g -> \h -> \x -> \y -> \z -> f (g (h x y z))
 qux = \f -> \g -> \h -> \x -> \y -> \z -> f (g (h x)) y z
 
 
+

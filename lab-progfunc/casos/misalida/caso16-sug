@@ -38,13 +38,13 @@ g (h x)
 Usar composición. Reemplazar por:
 (g . h) x
 **Sugerencia para:
-\z -> f ((g . h) x) y z
-Usar eta-reducción. Reemplazar por:
-f ((g . h) x) y
-**Sugerencia para:
 f ((g . h) x)
 Usar composición. Reemplazar por:
 (f . (g . h)) x
+**Sugerencia para:
+\z -> (f . (g . h)) x y z
+Usar eta-reducción. Reemplazar por:
+(f . (g . h)) x y
 **Sugerencia para:
 \y -> (f . (g . h)) x y
 Usar eta-reducción. Reemplazar por:

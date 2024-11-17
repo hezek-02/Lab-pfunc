@@ -40,13 +40,13 @@ id (id (1 + x))
 Usar composición. Reemplazar por:
 (id . id) (1 + x)
 **Sugerencia para:
-incr = \xs -> case xs of 
-    [] -> []; 
-    (x : xs) -> id ((id . id) (1 + x)) : incr xs
-Usar map. Reemplazar por:
-incr = map (\x -> id ((id . id) (1 + x)))
-**Sugerencia para:
 id ((id . id) (1 + x))
 Usar composición. Reemplazar por:
 (id . (id . id)) (1 + x)
+**Sugerencia para:
+incr = \xs -> case xs of 
+    [] -> []; 
+    (x : xs) -> (id . (id . id)) (1 + x) : incr xs
+Usar map. Reemplazar por:
+incr = map (\x -> (id . (id . id)) (1 + x))
 --------------------------------------------------------------------------------

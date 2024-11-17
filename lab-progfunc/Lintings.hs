@@ -317,34 +317,42 @@ lintAppend expr = case expr of
 -- ((f . fst) p . snd) p
 lintComp :: Linting Expr--f (g (h x)) y z- > f ((g . h) x) -> (f . (g . h)) x
 lintComp expr = case expr of
+   App exp1 (App (Infix Comp exp2 exp3) exp4)
+      | isSimple exp4  ->
+         let (exp1', suggestions1) = lintRec lintComp exp1
+             (exp2', suggestions2) = lintRec lintComp exp2
+             (exp3', suggestions3) = lintRec lintComp exp3
+             (exp4', suggestions4) = lintRec lintComp exp4
+         in (App (Infix Comp exp1' (Infix Comp exp2' exp3')) exp4',
+             suggestions1 ++ suggestions2 ++ suggestions3 ++ suggestions4 ++
+             [LintComp (App exp1' (App (Infix Comp exp2' exp3') exp4')) (App (Infix Comp exp1' (Infix Comp exp2' exp3')) exp4')])
    App exp1 (App exp2 exp3)
-      | isSimple exp3 ->
-         let (exp1', suggestions1) = lintComp exp1
-             (exp2', suggestions2) = lintComp exp2
-             (exp3', suggestions3) = lintComp exp3
+      | isSimple exp3  ->
+         let (exp1', suggestions1) = lintRec lintComp exp1
+             (exp2', suggestions2) = lintRec lintComp exp2
+             (exp3', suggestions3) = lintRec lintComp exp3
          in (App (Infix Comp exp1' exp2') exp3',
-             suggestions1 ++ suggestions2 ++ suggestions3 ++
-             [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')])
+             suggestions1 ++ suggestions2 ++ suggestions3 ++ [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')])
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintComp e1
-          (e2', suggestions2) = lintComp e2
+      let (e1', suggestions1) = lintRec lintComp e1
+          (e2', suggestions2) = lintRec lintComp e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintComp e1
-          (e2', suggestions2) = lintComp e2
+      let (e1', suggestions1) = lintRec lintComp e1
+          (e2', suggestions2) = lintRec lintComp e2
       in (App e1' e2', suggestions1 ++ suggestions2)
-   Lam x e ->
-      let (e', suggestions) = lintComp e
-      in (Lam x e', suggestions)
+   Lam x r ->
+      let (r', suggestions) = lintComp r
+      in (Lam x r', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintComp e1
-          (e2', suggestions2) = lintComp e2
-          (e3', suggestions3) = lintComp e3
+      let (e1', suggestions1) = lintRec lintComp e1
+          (e2', suggestions2) = lintRec lintComp e2
+          (e3', suggestions3) = lintRec lintComp e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintComp e1
-          (e2', suggestions2) = lintComp e2
-          (e3', suggestions3) = lintComp e3
+      let (e1', suggestions1) = lintRec lintComp e1
+          (e2', suggestions2) = lintRec lintComp e2
+          (e3', suggestions3) = lintRec lintComp e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -357,30 +365,30 @@ lintEta :: Linting Expr -- < \x -> (\y -> y + 1) x
 lintEta expr = case expr of --hallar forma de llegar al fondo
    Lam x (App e (Var y)) ->
       if x == y && notElem x (freeVariables e)
-         then let (e', suggestions) = lintEta e
+         then let (e', suggestions) =lintRec lintEta e
               in (e', suggestions ++ [LintEta (Lam x (App e' (Var y))) e'])
-         else let (e', suggestions) = lintEta e
-              in (Lam x (App e' (Var y)), suggestions)      
+         else let (e', suggestions) = lintRec lintEta e
+              in (Lam x (App e' (Var y)), suggestions)
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintEta e1
-          (e2', suggestions2) = lintEta e2
+      let (e1', suggestions1) = lintRec lintEta e1
+          (e2', suggestions2) = lintRec lintEta e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintEta e1
-          (e2', suggestions2) = lintEta e2
+      let (e1', suggestions1) = lintRec lintEta e1
+          (e2', suggestions2) = lintRec lintEta e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
       let (e', suggestions) = lintEta e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintEta e1
-          (e2', suggestions2) = lintEta e2
-          (e3', suggestions3) = lintEta e3
+      let (e1', suggestions1) =lintRec lintEta e1
+          (e2', suggestions2) =lintRec lintEta e2
+          (e3', suggestions3) =lintRec lintEta e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintEta e1
-          (e2', suggestions2) = lintEta e2
-          (e3', suggestions3) = lintEta e3
+      let (e1', suggestions1) =lintRec lintEta e1
+          (e2', suggestions2) =lintRec lintEta e2
+          (e3', suggestions3) =lintRec lintEta e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -413,7 +421,7 @@ liftToFunc lintExpr (FunDef name expr) =
 
 -- encadenar transformaciones:
 (>==>) :: Linting a -> Linting a -> Linting a
-lint1 >==> lint2 = \expr ->
+(lint1 >==> lint2) expr =
    let (expr', suggestions1) = lint1 expr
        (expr'', suggestions2) = lint2 expr'
    in (expr'', suggestions1 ++ suggestions2)
@@ -422,9 +430,8 @@ lint1 >==> lint2 = \expr ->
 -- hasta que ya no generen más cambios en 'func'
 lintRec :: Linting a -> Linting a
 lintRec lints func =
-   if null suggestions
-      then (func, [])
-      else (finalFunc, suggestions ++ moreSuggestions)
-   where
-      (func', suggestions) = lints func
-      (finalFunc, moreSuggestions) = lintRec lints func'
+   let (func', suggestions) = lints func
+   in if null suggestions
+      then (func', [])
+      else let (func'', suggestions') = lintRec lints func'
+           in (func'', suggestions ++ suggestions')

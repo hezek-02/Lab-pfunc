@@ -1,3 +1,6 @@
+qux = \f -> \g -> \h -> \x -> \y -> \z -> f (g (h x)) y z
+
+
 incr = \xs -> case xs of
   [] -> [];
   (x : xs) -> id (id (id(1 + x))) : incr xs
