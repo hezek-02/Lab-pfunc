@@ -58,21 +58,21 @@ lintComputeConstant expr = case expr of
            Infix Or (Lit (LitBool a)) (Lit (LitBool b)) -> (Lit (LitBool (a || b)), suggestions1 ++ suggestions2 ++ [LintCompCst (Infix Or expr1' expr2') (Lit (LitBool (a || b)))])
            _ -> (combinedExpr, suggestions1 ++ suggestions2) 
    App e1 e2 ->
-      let (e1', suggestions1) = lintComputeConstant e1
-          (e2', suggestions2) = lintComputeConstant e2
+      let (e1', suggestions1) =lintRec lintComputeConstant e1
+          (e2', suggestions2) =lintRec lintComputeConstant e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintComputeConstant e
+      let (e', suggestions) =lintRec lintComputeConstant e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintComputeConstant e1
-          (e2', suggestions2) = lintComputeConstant e2
-          (e3', suggestions3) = lintComputeConstant e3
+      let (e1', suggestions1) =lintRec lintComputeConstant e1
+          (e2', suggestions2) =lintRec lintComputeConstant e2
+          (e3', suggestions3) =lintRec lintComputeConstant e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintComputeConstant e1
-          (e2', suggestions2) = lintComputeConstant e2
-          (e3', suggestions3) = lintComputeConstant e3
+      let (e1', suggestions1) =lintRec lintComputeConstant e1
+          (e2', suggestions2) =lintRec lintComputeConstant e2
+          (e3', suggestions3) =lintRec lintComputeConstant e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -92,25 +92,25 @@ lintRedBool (Infix Eq (Lit (LitBool True)) (Var y)) = (Var y, [LintBool (Infix E
 lintRedBool (Infix Eq (Var x) (Lit (LitBool False))) = (App (Var "not") (Var x), [LintBool (Infix Eq (Var x) (Lit (LitBool False))) (App (Var "not") (Var x))])
 lintRedBool (Infix Eq (Lit (LitBool False)) (Var y)) = (App (Var "not") (Var y), [LintBool (Infix Eq (Lit (LitBool False)) (Var y)) (App (Var "not") (Var y))])
 lintRedBool (Infix a2 e1 e2) =
-   let (e1', suggestions1) = lintRedBool e1
-       (e2', suggestions2) = lintRedBool e2
+   let (e1', suggestions1) =lintRec lintRedBool e1
+       (e2', suggestions2) =lintRec lintRedBool e2
    in (Infix a2 e1' e2', suggestions1 ++ suggestions2)
 lintRedBool (App e1 e2) =
-   let (e1', suggestions1) = lintRedBool e1
-       (e2', suggestions2) = lintRedBool e2
+   let (e1', suggestions1) =lintRec lintRedBool e1
+       (e2', suggestions2) =lintRec lintRedBool e2
    in (App e1' e2', suggestions1 ++ suggestions2)
 lintRedBool (Lam x e) =
-   let (e', suggestions) = lintRedBool e
+   let (e', suggestions) =lintRec lintRedBool e
    in (Lam x e', suggestions)
 lintRedBool (Case e1 e2 (x, y, e3)) =
-   let (e1', suggestions1) = lintRedBool e1
-       (e2', suggestions2) = lintRedBool e2
-       (e3', suggestions3) = lintRedBool e3
+   let (e1', suggestions1) =lintRec lintRedBool e1
+       (e2', suggestions2) =lintRec lintRedBool e2
+       (e3', suggestions3) =lintRec lintRedBool e3
    in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
 lintRedBool (If e1 e2 e3) =
-   let (e1', suggestions1) = lintRedBool e1
-       (e2', suggestions2) = lintRedBool e2
-       (e3', suggestions3) = lintRedBool e3
+   let (e1', suggestions1) =lintRec lintRedBool e1
+       (e2', suggestions2) =lintRec lintRedBool e2
+       (e3', suggestions3) =lintRec lintRedBool e3
    in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
 lintRedBool expr = (expr, [])
 
@@ -130,28 +130,28 @@ lintRedIfCond expr = case expr of
       let (e2', suggestions2) = lintRedIfCond exp2
       in (e2', suggestions2 ++ [LintRedIf (If (Lit (LitBool True)) e2' exp3) e2'])
    If (Lit (LitBool False)) exp2 exp3 ->
-      let (e3', suggestions2) = lintRedIfCond exp3
+      let (e3', suggestions2) =lintRedIfCond exp3
       in (e3', suggestions2 ++ [LintRedIf (If (Lit (LitBool False)) exp2 e3') e3'])   
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintRedIfCond e1
-          (e2', suggestions2) = lintRedIfCond e2
-          (e3', suggestions3) = lintRedIfCond e3
+      let (e1', suggestions1) =lintRec lintRedIfCond e1
+          (e2', suggestions2) =lintRec lintRedIfCond e2
+          (e3', suggestions3) =lintRec lintRedIfCond e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintRedIfCond e1
-          (e2', suggestions2) = lintRedIfCond e2
+      let (e1', suggestions1) =lintRec lintRedIfCond e1
+          (e2', suggestions2) =lintRec lintRedIfCond e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintRedIfCond e1
-          (e2', suggestions2) = lintRedIfCond e2
+      let (e1', suggestions1) =lintRec lintRedIfCond e1
+          (e2', suggestions2) =lintRec lintRedIfCond e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintRedIfCond e
+      let (e', suggestions) =lintRec lintRedIfCond e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintRedIfCond e1
-          (e2', suggestions2) = lintRedIfCond e2
-          (e3', suggestions3) = lintRedIfCond e3
+      let (e1', suggestions1) =lintRec lintRedIfCond e1
+          (e2', suggestions2) =lintRec lintRedIfCond e2
+          (e3', suggestions3) =lintRec lintRedIfCond e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -170,25 +170,25 @@ lintRedIfAnd expr = case expr of
           (expr2', suggestions2) = lintRedIfAnd expr2
       in (Infix And exp1' expr2', suggestions1 ++ suggestions2 ++ [LintRedIf (If exp1' expr2' (Lit (LitBool False))) (Infix And exp1' expr2')])
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintRedIfAnd e1 
-          (e2', suggestions2) = lintRedIfAnd e2 
-          (e3', suggestions3) = lintRedIfAnd e3
+      let (e1', suggestions1) =lintRec lintRedIfAnd e1 
+          (e2', suggestions2) =lintRec lintRedIfAnd e2 
+          (e3', suggestions3) =lintRec lintRedIfAnd e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintRedIfAnd e1
-          (e2', suggestions2) = lintRedIfAnd e2
+      let (e1', suggestions1) =lintRec lintRedIfAnd e1
+          (e2', suggestions2) =lintRec lintRedIfAnd e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintRedIfAnd e1
-          (e2', suggestions2) = lintRedIfAnd e2
+      let (e1', suggestions1) =lintRec lintRedIfAnd e1
+          (e2', suggestions2) =lintRec lintRedIfAnd e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintRedIfAnd e
+      let (e', suggestions) =lintRec lintRedIfAnd e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintRedIfAnd e1
-          (e2', suggestions2) = lintRedIfAnd e2
-          (e3', suggestions3) = lintRedIfAnd e3
+      let (e1', suggestions1) =lintRec lintRedIfAnd e1
+          (e2', suggestions2) =lintRec lintRedIfAnd e2
+          (e3', suggestions3) =lintRec lintRedIfAnd e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -206,25 +206,25 @@ lintRedIfOr expr = case expr of
           (exp2', suggestions2) = lintRedIfOr exp2
       in (Infix Or exp1' exp2', suggestions1 ++ suggestions2 ++ [LintRedIf (If exp1' (Lit (LitBool True)) exp2') (Infix Or exp1' exp2')])
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintRedIfOr e1
-          (e2', suggestions2) = lintRedIfOr e2
+      let (e1', suggestions1) =lintRec lintRedIfOr e1
+          (e2', suggestions2) =lintRec lintRedIfOr e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintRedIfOr e1
-          (e2', suggestions2) = lintRedIfOr e2
+      let (e1', suggestions1) =lintRec lintRedIfOr e1
+          (e2', suggestions2) =lintRec lintRedIfOr e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintRedIfOr e
+      let (e', suggestions) =lintRec lintRedIfOr e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintRedIfOr e1
-          (e2', suggestions2) = lintRedIfOr e2
-          (e3', suggestions3) = lintRedIfOr e3
+      let (e1', suggestions1) =lintRec lintRedIfOr e1
+          (e2', suggestions2) =lintRec lintRedIfOr e2
+          (e3', suggestions3) =lintRec lintRedIfOr e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintRedIfOr e1
-          (e2', suggestions2) = lintRedIfOr e2
-          (e3', suggestions3) = lintRedIfOr e3
+      let (e1', suggestions1) =lintRec lintRedIfOr e1
+          (e2', suggestions2) =lintRec lintRedIfOr e2
+          (e3', suggestions3) =lintRec lintRedIfOr e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -252,25 +252,25 @@ lintNull expr = case expr of
       let (exp2', suggestions2) = lintNull exp2
       in (App (Var "null") exp2', suggestions2 ++ [LintNull (Infix Eq (App (Var "length") (Lit (LitInt 0))) exp2') (App (Var "null")  exp2')])
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintNull e1
-          (e2', suggestions2) = lintNull e2
+      let (e1', suggestions1) =lintRec lintNull e1
+          (e2', suggestions2) =lintRec lintNull e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintNull e1
-          (e2', suggestions2) = lintNull e2
+      let (e1', suggestions1) =lintRec lintNull e1
+          (e2', suggestions2) =lintRec lintNull e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintNull e
+      let (e', suggestions) =lintRec lintNull e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintNull e1
-          (e2', suggestions2) = lintNull e2
-          (e3', suggestions3) = lintNull e3
+      let (e1', suggestions1) =lintRec lintNull e1
+          (e2', suggestions2) =lintRec lintNull e2
+          (e3', suggestions3) =lintRec lintNull e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintNull e1
-          (e2', suggestions2) = lintNull e2
-          (e3', suggestions3) = lintNull e3
+      let (e1', suggestions1) =lintRec lintNull e1
+          (e2', suggestions2) =lintRec lintNull e2
+          (e3', suggestions3) =lintRec lintNull e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 --------------------------------------------------------------------------------
@@ -285,25 +285,25 @@ lintAppend expr = case expr of
           (exp2', suggestions2) = lintAppend exp2
       in (Infix Cons exp1' exp2', suggestions1 ++ suggestions2 ++ [LintAppend (Infix Append (Infix Cons exp1' (Lit LitNil)) exp2') (Infix Cons exp1' exp2')])
    Infix op e1 e2 -> --generales recursion de exploracion
-      let (e1', suggestions1) = lintAppend e1
-          (e2', suggestions2) = lintAppend e2
+      let (e1', suggestions1) =lintRec lintAppend e1
+          (e2', suggestions2) =lintRec lintAppend e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintAppend e1
-          (e2', suggestions2) = lintAppend e2
+      let (e1', suggestions1) =lintRec lintAppend e1
+          (e2', suggestions2) =lintRec lintAppend e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintAppend e
+      let (e', suggestions) =lintRec lintAppend e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintAppend e1
-          (e2', suggestions2) = lintAppend e2
-          (e3', suggestions3) = lintAppend e3
+      let (e1', suggestions1) =lintRec lintAppend e1
+          (e2', suggestions2) =lintRec lintAppend e2
+          (e3', suggestions3) =lintRec lintAppend e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintAppend e1
-          (e2', suggestions2) = lintAppend e2
-          (e3', suggestions3) = lintAppend e3
+      let (e1', suggestions1) =lintRec lintAppend e1
+          (e2', suggestions2) =lintRec lintAppend e2
+          (e3', suggestions3) =lintRec lintAppend e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
@@ -314,20 +314,11 @@ lintAppend expr = case expr of
 -- Construye sugerencias de la forma (LintComp e r)
 lintComp :: Linting Expr
 lintComp expr = case expr of
-   App exp1 (App (Infix Comp exp2 exp3) exp4)
-      | isSimple exp4  ->
-         let (exp1', suggestions1) = lintRec lintComp exp1
-             (exp2', suggestions2) = lintRec lintComp exp2
-             (exp3', suggestions3) = lintRec lintComp exp3
-             (exp4', suggestions4) = lintRec lintComp exp4
-         in (App (Infix Comp exp1' (Infix Comp exp2' exp3')) exp4',
-             suggestions1 ++ suggestions2 ++ suggestions3 ++ suggestions4 ++
-             [LintComp (App exp1' (App (Infix Comp exp2' exp3') exp4')) (App (Infix Comp exp1' (Infix Comp exp2' exp3')) exp4')])
    App exp1 (App exp2 exp3)
       | isSimple exp3  ->
-         let (exp1', suggestions1) = lintRec lintComp exp1
-             (exp2', suggestions2) = lintRec lintComp exp2
-             (exp3', suggestions3) = lintRec lintComp exp3
+         let (exp1', suggestions1) = lintComp exp1
+             (exp2', suggestions2) = lintComp exp2
+             (exp3', suggestions3) = lintComp exp3
          in (App (Infix Comp exp1' exp2') exp3',
              suggestions1 ++ suggestions2 ++ suggestions3 ++ [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')])
    Infix op e1 e2 ->
@@ -367,25 +358,25 @@ lintEta expr = case expr of
          else let (e', suggestions) =  lintEta e
               in (Lam x (App e' (Var y)), suggestions)
    Infix op e1 e2 ->
-      let (e1', suggestions1) =  lintEta e1
-          (e2', suggestions2) =  lintEta e2
+      let (e1', suggestions1) =lintRec  lintEta e1
+          (e2', suggestions2) =lintRec  lintEta e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) =  lintEta e1
-          (e2', suggestions2) =  lintEta e2
+      let (e1', suggestions1) =lintRec  lintEta e1
+          (e2', suggestions2) =lintRec  lintEta e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
-      let (e', suggestions) = lintEta e
+      let (e', suggestions) =lintRec lintEta e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) = lintEta e1
-          (e2', suggestions2) = lintEta e2
-          (e3', suggestions3) = lintEta e3
+      let (e1', suggestions1) =lintRec lintEta e1
+          (e2', suggestions2) =lintRec lintEta e2
+          (e3', suggestions3) =lintRec lintEta e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintEta e1
-          (e2', suggestions2) = lintEta e2
-          (e3', suggestions3) = lintEta e3
+      let (e1', suggestions1) =lintRec lintEta e1
+          (e2', suggestions2) =lintRec lintEta e2
+          (e3', suggestions3) =lintRec lintEta e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
