@@ -16,6 +16,16 @@ freeVariables (Lam x e) = filter (/= x) (freeVariables e)
 freeVariables (Case e1 e2 (x, y, e3)) = freeVariables e1 ++ freeVariables e2 ++ filter (\v -> v /= x && v /= y) (freeVariables e3)
 freeVariables (If e1 e2 e3) = freeVariables e1 ++ freeVariables e2 ++ freeVariables e3
 
+isSimple :: Expr -> Bool
+isSimple e = case e of
+   Var _         -> True
+   Lit _         -> True
+   Infix _ (Var _) (Lit _) -> True
+   Infix _ (Lit _) (Var _) -> True
+   Infix _ (Var _) (Var _) -> True
+   Infix _ (Lit _) (Lit _) -> True
+   _     -> False
+
 --------------------------------------------------------------------------------
 -- LINTINGS
 --------------------------------------------------------------------------------
@@ -298,25 +308,31 @@ lintAppend expr = case expr of
 --------------------------------------------------------------------------------
 -- Composición
 --------------------------------------------------------------------------------
--- se aplica en casos de la forma (f (g t)), reemplazando por (f . g) t
+-- se aplica en casos de la forma (f (g t)), reemplazando por (f . g) t--
 -- Construye sugerencias de la forma (LintComp e r)
-lintComp :: Linting Expr--f (g (h x))
+
+-- **Sugerencia para:
+-- (f . fst) p (snd p)
+-- Usar composición. Reemplazar por:
+-- ((f . fst) p . snd) p
+lintComp :: Linting Expr--f (g (h x)) y z- > f ((g . h) x) -> (f . (g . h)) x
 lintComp expr = case expr of
-   App exp1 (App exp2 (Var x)) -> (App (Infix Comp exp1 exp2) (Var x), [LintComp expr (App (Infix Comp exp1 exp2) (Var x))])
-   App exp1 (App exp2 (Lit x)) -> (App (Infix Comp exp1 exp2) (Lit x), [LintComp expr (App (Infix Comp exp1 exp2) (Lit x))])
-   App exp1 (App exp2 (Infix op (Var x) (Lit y))) -> (App (Infix Comp exp1 exp2) (Infix op (Var x) (Lit y)), [LintComp (App exp1 (App exp2 (Infix op (Var x) (Lit y)))) (App (Infix Comp exp1 exp2) (Infix op (Var x) (Lit y)))])
-   App exp1 (App exp2 (Infix op (Lit x) (Var y))) -> (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Var y)), [LintComp (App exp1 (App exp2 (Infix op (Lit x) (Var y)))) (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Var y)))])
-   App exp1 (App exp2 (Infix op (Lit x) (Lit y))) -> (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Lit y)), [LintComp (App exp1 (App exp2 (Infix op (Lit x) (Lit y)))) (App (Infix Comp exp1 exp2) (Infix op (Lit x) (Lit y)))])
-   App exp1 (App exp2 (Infix op (Var x) (Var y))) -> (App (Infix Comp exp1 exp2) (Infix op (Var x) (Var y)), [LintComp (App exp1 (App exp2 (Infix op (Var x) (Var y)))) (App (Infix Comp exp1 exp2) (Infix op (Var x) (Var y)))])
-   
-   App e1 e2 ->
-      let (e1', suggestions1) = lintComp e1
-          (e2', suggestions2) = lintComp e2
-      in (App e1' e2', suggestions1 ++ suggestions2)
+   App exp1 (App exp2 exp3)
+      | isSimple exp3 ->
+         let (exp1', suggestions1) = lintComp exp1
+             (exp2', suggestions2) = lintComp exp2
+             (exp3', suggestions3) = lintComp exp3
+         in (App (Infix Comp exp1' exp2') exp3',
+             suggestions1 ++ suggestions2 ++ suggestions3 ++
+             [LintComp (App exp1' (App exp2' exp3')) (App (Infix Comp exp1' exp2') exp3')])
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintComp e1
           (e2', suggestions2) = lintComp e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
+   App e1 e2 ->
+      let (e1', suggestions1) = lintComp e1
+          (e2', suggestions2) = lintComp e2
+      in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
       let (e', suggestions) = lintComp e
       in (Lam x e', suggestions)
