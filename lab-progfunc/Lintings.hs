@@ -167,9 +167,9 @@ lintRedIfAnd expr = case expr of
           (expr2', suggestions2) = lintRedIfAnd expr2
       in (Infix And exp1' expr2', suggestions1 ++ suggestions2 ++ [LintRedIf (If exp1' expr2' (Lit (LitBool False))) (Infix And exp1' expr2')])
    If e1 e2 e3 ->
-      let (e1', suggestions1) = lintRedIfAnd e1 --c
-          (e2', suggestions2) = lintRedIfAnd e2 -- True
-          (e3', suggestions3) = lintRedIfAnd e3-- c && c
+      let (e1', suggestions1) = lintRedIfAnd e1 
+          (e2', suggestions2) = lintRedIfAnd e2 
+          (e3', suggestions3) = lintRedIfAnd e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    Infix op e1 e2 ->
       let (e1', suggestions1) = lintRedIfAnd e1
@@ -275,7 +275,6 @@ lintNull expr = case expr of
 --------------------------------------------------------------------------------
 -- se aplica en casos de la forma (e:[] ++ es), reemplazando por (e:es)
 -- Construye sugerencias de la forma (LintAppend e r)
-
 lintAppend :: Linting Expr
 lintAppend expr = case expr of
    Infix Append (Infix Cons exp1 (Lit LitNil)) exp2 ->
@@ -310,12 +309,7 @@ lintAppend expr = case expr of
 --------------------------------------------------------------------------------
 -- se aplica en casos de la forma (f (g t)), reemplazando por (f . g) t--
 -- Construye sugerencias de la forma (LintComp e r)
-
--- **Sugerencia para:
--- (f . fst) p (snd p)
--- Usar composición. Reemplazar por:
--- ((f . fst) p . snd) p
-lintComp :: Linting Expr--f (g (h x)) y z- > f ((g . h) x) -> (f . (g . h)) x
+lintComp :: Linting Expr
 lintComp expr = case expr of
    App exp1 (App (Infix Comp exp2 exp3) exp4)
       | isSimple exp4  ->
@@ -361,41 +355,40 @@ lintComp expr = case expr of
 --------------------------------------------------------------------------------
 -- se aplica en casos de la forma \x -> e x, reemplazando por e
 -- Construye sugerencias de la forma (LintEta e r)
-lintEta :: Linting Expr -- < \x -> (\y -> y + 1) x
-lintEta expr = case expr of --hallar forma de llegar al fondo
+lintEta :: Linting Expr 
+lintEta expr = case expr of 
    Lam x (App e (Var y)) ->
       if x == y && notElem x (freeVariables e)
-         then let (e', suggestions) =lintRec lintEta e
+         then let (e', suggestions) = lintEta e
               in (e', suggestions ++ [LintEta (Lam x (App e' (Var y))) e'])
-         else let (e', suggestions) = lintRec lintEta e
+         else let (e', suggestions) =  lintEta e
               in (Lam x (App e' (Var y)), suggestions)
    Infix op e1 e2 ->
-      let (e1', suggestions1) = lintRec lintEta e1
-          (e2', suggestions2) = lintRec lintEta e2
+      let (e1', suggestions1) =  lintEta e1
+          (e2', suggestions2) =  lintEta e2
       in (Infix op e1' e2', suggestions1 ++ suggestions2)
    App e1 e2 ->
-      let (e1', suggestions1) = lintRec lintEta e1
-          (e2', suggestions2) = lintRec lintEta e2
+      let (e1', suggestions1) =  lintEta e1
+          (e2', suggestions2) =  lintEta e2
       in (App e1' e2', suggestions1 ++ suggestions2)
    Lam x e ->
       let (e', suggestions) = lintEta e
       in (Lam x e', suggestions)
    Case e1 e2 (x, y, e3) ->
-      let (e1', suggestions1) =lintRec lintEta e1
-          (e2', suggestions2) =lintRec lintEta e2
-          (e3', suggestions3) =lintRec lintEta e3
+      let (e1', suggestions1) = lintEta e1
+          (e2', suggestions2) = lintEta e2
+          (e3', suggestions3) = lintEta e3
       in (Case e1' e2' (x, y, e3'), suggestions1 ++ suggestions2 ++ suggestions3)
    If e1 e2 e3 ->
-      let (e1', suggestions1) =lintRec lintEta e1
-          (e2', suggestions2) =lintRec lintEta e2
-          (e3', suggestions3) =lintRec lintEta e3
+      let (e1', suggestions1) = lintEta e1
+          (e2', suggestions2) = lintEta e2
+          (e3', suggestions3) = lintEta e3
       in (If e1' e2' e3', suggestions1 ++ suggestions2 ++ suggestions3)
    _ -> (expr, [])
 
 --------------------------------------------------------------------------------
 -- Eliminación de recursión con map
 --------------------------------------------------------------------------------
-
 -- Sustituye recursión sobre listas por `map`
 -- Construye sugerencias de la forma (LintMap f r)
 lintMap :: Linting FunDef
@@ -410,8 +403,6 @@ lintMap (FunDef name expr) = case expr of
 --------------------------------------------------------------------------------
 -- Combinación de Lintings
 --------------------------------------------------------------------------------
-
-
 -- Dada una transformación a nivel de expresión, se construye
 -- una transformación a nivel de función
 liftToFunc :: Linting Expr -> Linting FunDef
